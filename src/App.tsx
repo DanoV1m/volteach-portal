@@ -50,6 +50,63 @@ export default function App() {
   // Daily Toast notifications list
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  // Quick formulas state
+  const [quickFormulas, setQuickFormulas] = useState<{ id: string; title: string; eq: string }[]>(() => {
+    const defaultFormulas = [
+      { id: "q1", title: "חוק אוהם", eq: "$$V=I \\cdot R$$" },
+      { id: "q2", title: "הספק", eq: "$$P=V \\cdot I=I^2 R$$" },
+      { id: "q3", title: "תדר תהודה", eq: "$$\\omega_0=\\frac{1}{\\sqrt{LC}}$$" },
+      { id: "q4", title: "מתח תרמי", eq: "$$V_T \\approx 26\\text{mV}$$" }
+    ];
+    try {
+      const saved = localStorage.getItem('vt_quick_formulas');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return defaultFormulas;
+  });
+
+  const [newQuickTitle, setNewQuickTitle] = useState('');
+  const [newQuickEq, setNewQuickEq] = useState('');
+  const [isAddingQuick, setIsAddingQuick] = useState(false);
+
+  const handleAddQuickFormula = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newQuickTitle.trim() || !newQuickEq.trim()) {
+      addToast("נא למלא את כל השדות", "error");
+      return;
+    }
+    const formattedEq = newQuickEq.includes('$') ? newQuickEq : `$$${newQuickEq}$$`;
+    const newFormula = {
+      id: `custom_q_${Date.now()}`,
+      title: newQuickTitle,
+      eq: formattedEq
+    };
+    const updated = [...quickFormulas, newFormula];
+    setQuickFormulas(updated);
+    try {
+      localStorage.setItem('vt_quick_formulas', JSON.stringify(updated));
+      addToast(`הנוסחה "${newQuickTitle}" נוספה לנוסחאות המהירות!`, "success");
+    } catch (err) {
+      console.error(err);
+    }
+    setNewQuickTitle('');
+    setNewQuickEq('');
+    setIsAddingQuick(false);
+  };
+
+  const handleDeleteQuickFormula = (id: string, title: string) => {
+    const updated = quickFormulas.filter(f => f.id !== id);
+    setQuickFormulas(updated);
+    try {
+      localStorage.setItem('vt_quick_formulas', JSON.stringify(updated));
+      addToast(`הנוסחה "${title}" הוסרה מהנוסחאות המהירות`, "info");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Auth State
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -324,6 +381,17 @@ export default function App() {
         { name: "יציבות ראוס", eq: "\\text{יציב} \\iff \\text{עמודה} > 0" },
         { name: "שגיאה מצב", eq: "e_{ss}=\\frac{1}{1+K_p}" }
       ]
+    },
+    trig: {
+      category: "📐 זהויות טריגונומטריות",
+      list: [
+        { name: "זהות פיתגורס", eq: "\\sin^2(x)+\\cos^2(x)=1" },
+        { name: "זווית כפולה סינוס", eq: "\\sin(2x)=2\\sin(x)\\cos(x)" },
+        { name: "זווית כפולה קוסינוס", eq: "\\cos(2x)=\\cos^2(x)-\\sin^2(x)" },
+        { name: "טנגנס", eq: "\\tan(x)=\\frac{\\sin(x)}{\\cos(x)}" },
+        { name: "סכום זוויות סינוס", eq: "\\sin(a \\pm b)=\\sin(a)\\cos(b) \\pm \\cos(a)\\sin(b)" },
+        { name: "סכום זוויות קוסינוס", eq: "\\cos(a \\pm b)=\\cos(a)\\cos(b) \\mp \\sin(a)\\sin(b)" }
+      ]
     }
   };
 
@@ -393,27 +461,68 @@ export default function App() {
                 <span className="text-xs font-black tracking-widest text-indigo-400">⚡ כלי עזר ונוסחאות</span>
               </div>
 
-              {/* Quick Formulas List */}
+               {/* Quick Formulas List */}
               <div className="space-y-2">
-                <div className="text-[10px] font-bold text-amber-500 uppercase tracking-wide">נוסחאות מהירות:</div>
+                <div className="text-[10px] font-bold text-amber-500 uppercase tracking-wide flex justify-between items-center pr-1">
+                  <span>נוסחאות מהירות:</span>
+                  <button 
+                    onClick={() => setIsAddingQuick(p => !p)} 
+                    className="text-[10px] text-indigo-400 hover:text-white underline cursor-pointer"
+                  >
+                    {isAddingQuick ? "ביטול" : "+ הוסף נוסחה"}
+                  </button>
+                </div>
+
+                {isAddingQuick && (
+                  <form onSubmit={handleAddQuickFormula} className="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-2 animate-fadeIn text-right">
+                    <input 
+                      type="text" 
+                      placeholder="שם הנוסחה (למשל: חוק אוהם)" 
+                      value={newQuickTitle}
+                      onChange={e => setNewQuickTitle(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="נוסחה ב-LaTeX (למשל: V = I * R)" 
+                      value={newQuickEq}
+                      onChange={e => setNewQuickEq(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono direction-ltr text-right"
+                    />
+                    <button 
+                      type="submit"
+                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-1.5 text-[10px] font-bold transition-colors"
+                    >
+                      שמור נוסחה מהירה
+                    </button>
+                  </form>
+                )}
+
                 <div className="grid gap-1.5">
-                  {[
-                    { id: "q1", title: "חוק אוהם", eq: "$$V=I \\cdot R$$" },
-                    { id: "q2", title: "הספק", eq: "$$P=V \\cdot I=I^2 R$$" },
-                    { id: "q3", title: "תדר תהודה", eq: "$$\\omega_0=\\frac{1}{\\sqrt{LC}}$$" },
-                    { id: "q4", title: "מתח תרמי", eq: "$$V_T \\approx 26\\text{mV}$$" }
-                  ].map(f => {
+                  {quickFormulas.map(f => {
                     const isBookmarked = bookmarks.some(b => b.id === f.id);
+                    const isCustom = f.id.startsWith('custom_q_');
                     return (
-                      <div key={f.id} className="flex flex-col rounded-xl border border-slate-900 bg-slate-900/40 p-3 hover:border-slate-800 transition-colors">
+                      <div key={f.id} className="group relative flex flex-col rounded-xl border border-slate-900 bg-slate-900/40 p-3 hover:border-slate-800 transition-colors">
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-slate-400 font-semibold">{f.title}</span>
-                          <button 
-                            onClick={() => toggleBookmark(f.id, f.title, f.eq)}
-                            className={`text-xs hover:text-white transition-colors ${isBookmarked ? 'text-indigo-400' : 'text-slate-600'}`}
-                          >
-                            {isBookmarked ? '★' : '+'}
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            {isCustom && (
+                              <button 
+                                onClick={() => handleDeleteQuickFormula(f.id, f.title)}
+                                className="text-[10px] text-red-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="מחק נוסחה אישית"
+                              >
+                                ✕
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => toggleBookmark(f.id, f.title, f.eq)}
+                              className={`text-xs hover:text-white transition-colors ${isBookmarked ? 'text-indigo-400' : 'text-slate-600'}`}
+                            >
+                              {isBookmarked ? '★' : '+'}
+                            </button>
+                          </div>
                         </div>
                         <div className="mt-2 text-center text-sm font-mono text-indigo-300 pointer-events-none direction-ltr">
                           {f.eq}
@@ -631,6 +740,16 @@ export default function App() {
                 )}
               </section>
             )}
+            
+            {/* FOOTER BIO */}
+            <footer className="w-full py-8 border-t border-slate-900/50 mt-16 text-center text-[10px] text-slate-500 max-w-4xl mx-auto px-6">
+              <p className="leading-relaxed">
+                נוצר בגאווה על ידי מהנדס חשמל בתחילת דרכו ⚡
+              </p>
+              <p className="mt-1 text-slate-650">
+                VOLTEACH © {new Date().getFullYear()} — כל הזכויות שמורות
+              </p>
+            </footer>
           </div>
         </main>
       </div>
