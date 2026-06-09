@@ -1,4 +1,4 @@
-# VOLTEACH ⚡ - פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל
+# <img src="./volteach-app/assets/logo.png" width="40" align="right" /> VOLTEACH - פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל
 
 [English Version Below]
 
@@ -38,7 +38,7 @@
 
 ---
 
-# VOLTEACH ⚡ - Electrical Engineering Student Portal
+# <img src="./volteach-app/assets/logo.png" width="40" align="right" /> VOLTEACH - Electrical Engineering Student Portal
 
 VOLTEACH is a modern, responsive, and feature-rich learning portal designed specifically for Electrical and Electronics Engineering students in Israel. It consolidates academic syllabi, engineering tools, calculators, customizable formula sheets, exam simulators, and educational materials into a single premium workspace.
 
@@ -86,7 +86,7 @@ VOLTEACH is a modern, responsive, and feature-rich learning portal designed spec
 1. Clone the repository:
    ```bash
    git clone https://github.com/DanoV1m/volteach-portal.git
-   cd volteach-portal
+   cd volteach-portal/volteach-app
    ```
 2. Install dependencies:
    ```bash

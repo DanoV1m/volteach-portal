@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Plus, Check, RefreshCw, Share2, Printer, Trash, X, Cloud } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Plus, Check, RefreshCw, Share2, Printer, Trash, X, Cloud, Cpu, Compass, Activity, Landmark, GraduationCap, BookOpen, Zap } from 'lucide-react';
 import { institutions } from './data/institutions';
 import { coursesData } from './data/courses';
 import { FormulaBookmark } from './types';
@@ -404,7 +404,7 @@ export default function App() {
           <div 
             key={t.id} 
             className={`pointer-events-auto flex items-center gap-3 rounded-2xl border bg-slate-950/95 p-4 px-5 text-sm shadow-xl shadow-black/40 border-l-4 transition-all duration-300 animate-slideIn ${
-              t.type === 'error' ? 'border-red-500 border-l-red-500' : t.type === 'success' ? 'border-emerald-500 border-l-emerald-500' : 'border-indigo-500 border-l-indigo-500'
+              t.type === 'error' ? 'border-red-500 border-l-red-500' : t.type === 'success' ? 'border-emerald-500 border-l-emerald-500' : 'border-emerald-500 border-l-emerald-500'
             }`}
           >
             <span>{t.type === 'error' ? '⚠️' : t.type === 'success' ? '✅' : '💡'}</span>
@@ -448,7 +448,7 @@ export default function App() {
           {/* Collapse toggle */}
           <button 
             onClick={() => setIsSidebarCollapsed(p => !p)}
-            className="absolute left-1.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 border border-slate-800 text-indigo-400 hover:bg-slate-850"
+            className="absolute left-1.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 border border-slate-800 text-emerald-400 hover:bg-slate-850"
             title={isSidebarCollapsed ? "פתח סרגל כלים" : "כווץ סרגל כלים"}
           >
             {isSidebarCollapsed ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
@@ -458,16 +458,19 @@ export default function App() {
             <div className="p-4 space-y-6 animate-fadeIn pb-16">
               {/* Header Title */}
               <div className="flex items-center justify-between border-b border-slate-900 pb-3.5 pr-2">
-                <span className="text-xs font-black tracking-widest text-indigo-400">⚡ כלי עזר ונוסחאות</span>
+                <span className="text-xs font-black tracking-widest text-emerald-400 flex items-center gap-1.5">
+                  <Zap className="h-4 w-4 text-emerald-400" />
+                  <span>כלי עזר ונוסחאות</span>
+                </span>
               </div>
 
                {/* Quick Formulas List */}
               <div className="space-y-2">
-                <div className="text-[10px] font-bold text-amber-500 uppercase tracking-wide flex justify-between items-center pr-1">
+                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide flex justify-between items-center pr-1">
                   <span>נוסחאות מהירות:</span>
                   <button 
                     onClick={() => setIsAddingQuick(p => !p)} 
-                    className="text-[10px] text-indigo-400 hover:text-white underline cursor-pointer"
+                    className="text-[10px] text-emerald-400 hover:text-white underline cursor-pointer"
                   >
                     {isAddingQuick ? "ביטול" : "+ הוסף נוסחה"}
                   </button>
@@ -480,18 +483,18 @@ export default function App() {
                       placeholder="שם הנוסחה (למשל: חוק אוהם)" 
                       value={newQuickTitle}
                       onChange={e => setNewQuickTitle(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-xs text-white placeholder-slate-655 focus:outline-none focus:border-emerald-500"
                     />
                     <input 
                       type="text" 
                       placeholder="נוסחה ב-LaTeX (למשל: V = I * R)" 
                       value={newQuickEq}
                       onChange={e => setNewQuickEq(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono direction-ltr text-right"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-xs text-white placeholder-slate-655 focus:outline-none focus:border-emerald-500 font-mono direction-ltr text-right"
                     />
                     <button 
                       type="submit"
-                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-1.5 text-[10px] font-bold transition-colors"
+                      className="w-full bg-emerald-600 hover:bg-emerald-550 text-white rounded-lg py-1.5 text-[10px] font-bold transition-colors"
                     >
                       שמור נוסחה מהירה
                     </button>
@@ -518,13 +521,13 @@ export default function App() {
                             )}
                             <button 
                               onClick={() => toggleBookmark(f.id, f.title, f.eq)}
-                              className={`text-xs hover:text-white transition-colors ${isBookmarked ? 'text-indigo-400' : 'text-slate-600'}`}
+                              className={`text-xs hover:text-white transition-colors ${isBookmarked ? 'text-emerald-400' : 'text-slate-600'}`}
                             >
                               {isBookmarked ? '★' : '+'}
                             </button>
                           </div>
                         </div>
-                        <div className="mt-2 text-center text-sm font-mono text-indigo-300 pointer-events-none direction-ltr">
+                        <div className="mt-2 text-center text-sm font-mono text-cyan-300 pointer-events-none direction-ltr">
                           {f.eq}
                         </div>
                       </div>
@@ -535,9 +538,19 @@ export default function App() {
 
               {/* Accordion Lists */}
               <div className="space-y-1.5">
-                <div className="text-[10px] font-bold text-amber-500 uppercase tracking-wide">דפי נוסחאות רגילים:</div>
+                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide">דפי נוסחאות רגילים:</div>
                 {Object.entries(formulasSheets).map(([key, data]) => {
                   const isOpen = openAccordion === key;
+                  const categoryIcons: Record<string, React.ReactNode> = {
+                    circuits: <Cpu className="h-4 w-4 text-emerald-400" />,
+                    electronics: <Cpu className="h-4 w-4 text-emerald-400" />,
+                    signals: <Compass className="h-4 w-4 text-cyan-400" />,
+                    comms: <Compass className="h-4 w-4 text-cyan-400" />,
+                    control: <Activity className="h-4 w-4 text-emerald-400" />,
+                    trig: <Compass className="h-4 w-4 text-cyan-400" />
+                  };
+                  const cleanCategoryName = data.category.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+
                   return (
                     <div key={key} className="rounded-xl border border-slate-900 overflow-hidden">
                       <button 
@@ -546,7 +559,10 @@ export default function App() {
                           isOpen ? 'bg-slate-900/60 text-white' : ''
                         }`}
                       >
-                        <span>{data.category}</span>
+                        <span className="flex items-center gap-2">
+                          {categoryIcons[key]}
+                          <span>{cleanCategoryName}</span>
+                        </span>
                         <span>{isOpen ? '▲' : '▼'}</span>
                       </button>
                       {isOpen && (
@@ -560,12 +576,12 @@ export default function App() {
                                   <span>{f.name}</span>
                                   <button 
                                     onClick={() => toggleBookmark(fid, f.name, `$$${f.eq}$$`)}
-                                    className={`text-xs font-bold hover:text-white transition-colors ${isBookmarked ? 'text-indigo-400' : 'text-slate-600'}`}
+                                    className={`text-xs font-bold hover:text-white transition-colors ${isBookmarked ? 'text-emerald-400' : 'text-slate-600'}`}
                                   >
                                     {isBookmarked ? '★' : '+'}
                                   </button>
                                 </div>
-                                <div className="text-center font-mono text-xs text-indigo-300 pointer-events-none direction-ltr pt-1">
+                                <div className="text-center font-mono text-xs text-cyan-300 pointer-events-none direction-ltr pt-1">
                                   {`$$${f.eq}$$`}
                                 </div>
                               </div>
@@ -580,7 +596,7 @@ export default function App() {
 
               {/* Calculations Block */}
               <div className="border-t border-slate-900 pt-6">
-                <div className="mb-4 text-[10px] font-bold text-amber-500 uppercase tracking-wide">מחשבונים הנדסיים מובנים:</div>
+                <div className="mb-4 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">מחשבונים הנדסיים מובנים:</div>
                 <Calculators />
               </div>
             </div>
@@ -590,7 +606,7 @@ export default function App() {
         {/* CONTACT FLOATING ACTION CONTROL */}
         <button 
           onClick={() => setIsContactOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-pink-500 to-indigo-600 text-xl text-white shadow-xl hover:scale-110 active:scale-95 transition-transform"
+          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-teal-500 to-emerald-600 text-xl text-white shadow-xl hover:scale-110 active:scale-95 transition-transform"
           title="צור קשר / דווח"
         >
           ✉️
@@ -731,7 +747,7 @@ export default function App() {
                           <Trash className="h-3.5 w-3.5" />
                         </button>
                         <h4 className="text-xs font-bold text-slate-400 pr-1">{f.title}</h4>
-                        <div className="mt-3 text-center text-md text-indigo-300 font-mono direction-ltr">
+                        <div className="mt-3 text-center text-md text-cyan-300 font-mono direction-ltr">
                           {f.latex}
                         </div>
                       </div>

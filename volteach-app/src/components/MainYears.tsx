@@ -57,8 +57,8 @@ export default function MainYears({
 
       {/* SECTION HEADER */}
       <div className="mb-12 text-center">
-        <div className="inline-block rounded-full border border-slate-800 bg-slate-900/80 px-4 py-1 text-xs font-bold text-indigo-400">
-          📅 בחירת שנת לימודים וסמסטר
+        <div className="inline-block rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-1 text-xs font-bold text-emerald-400">
+          בחירת שנת לימודים וסמסטר
         </div>
         <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-4xl">
           {institution.fullName}
@@ -72,7 +72,7 @@ export default function MainYears({
               onClick={() => onTrackChange?.('regular')}
               className={`rounded-full px-5 py-2 text-xs font-bold transition-all border ${
                 selectedTrack === 'regular'
-                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-650/30'
+                  ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-650/30'
                   : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'
               }`}
             >
@@ -82,7 +82,7 @@ export default function MainYears({
               onClick={() => onTrackChange?.('spread')}
               className={`rounded-full px-5 py-2 text-xs font-bold transition-all border ${
                 selectedTrack === 'spread'
-                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-650/30'
+                  ? 'bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-650/30'
                   : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'
               }`}
             >
@@ -100,7 +100,7 @@ export default function MainYears({
           </div>
           <button
             onClick={onRefreshCache}
-            className="flex items-center gap-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-400 transition-colors"
+            className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-400 transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             <span>רענן Cache</span>
@@ -113,14 +113,14 @@ export default function MainYears({
         {years.map((y, idx) => (
           <div
             key={y}
-            className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:bg-slate-900/60"
+            className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 hover:bg-slate-900/60"
             style={{
               animation: 'slideUpFade 0.4s ease-out forwards',
               animationDelay: `${idx * 0.05}s`
             }}
           >
             <div className="mb-6">
-              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-5xl font-black text-transparent opacity-80 group-hover:opacity-100 transition-opacity">
+              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-5xl font-black text-transparent opacity-80 group-hover:opacity-100 transition-opacity">
                 {y}
               </span>
               <h3 className="mt-3 text-lg font-bold text-white">שנה {YEAR_LABELS[y]}</h3>
@@ -132,7 +132,7 @@ export default function MainYears({
             <div className="space-y-2">
               <button
                 onClick={() => onSelectYearSemester(y, 1)}
-                className="w-full rounded-2xl bg-indigo-650 hover:bg-indigo-600 border border-indigo-500/30 p-2.5 text-xs font-bold text-white transition-all shadow-md active:scale-95"
+                className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-550 border border-emerald-550/30 p-2.5 text-xs font-bold text-white transition-all shadow-md active:scale-95"
               >
                 סמסטר א'
               </button>

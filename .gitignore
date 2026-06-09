@@ -1,8 +1,12 @@
-node_modules/
-build/
-dist/
-coverage/
+# Dependency and build folders in subfolder
+volteach-app/node_modules/
+volteach-app/dist/
+volteach-app/.firebase/
+volteach-app/coverage/
+volteach-app/.env*
+!volteach-app/.env.example
+
+# Root exclusions
 .DS_Store
 *.log
-.env*
-!.env.example
+.agents/

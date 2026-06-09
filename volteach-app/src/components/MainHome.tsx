@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, School, GraduationCap, BookOpen, Compass, Zap } from 'lucide-react';
 import { coursesData } from '../data/courses';
 import { topicKnowledge } from '../data/enrichment';
 
@@ -80,19 +80,20 @@ export default function MainHome({
   return (
     <section className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden px-6 py-12 md:px-12">
       {/* Background ambient glows */}
-      <div className="absolute top-1/4 left-1/4 h-[400px] w-[400px] rounded-full bg-indigo-500/10 blur-[80px]" />
-      <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-purple-500/10 blur-[80px]" />
+      <div className="absolute top-1/4 left-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/10 blur-[80px]" />
+      <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-cyan-500/10 blur-[80px]" />
 
       <div className="relative z-10 w-full max-w-4xl text-center">
         {/* HERO BADGE */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/80 px-5 py-2 text-sm font-semibold text-amber-400">
-          ⚡ המדריך המקיף להנדסת חשמל בישראל
+        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-5 py-2 text-sm font-semibold text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+          <Zap className="h-4 w-4 text-emerald-400 animate-pulse" />
+          <span>המדריך המקיף להנדסת חשמל בישראל</span>
         </div>
 
         {/* HERO HEADER */}
         <h1 className="mt-8 text-4xl font-extrabold tracking-tight text-white sm:text-6xl leading-[1.15]">
           ברוכים הבאים ל-
-          <span className="block mt-2 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500 bg-clip-text text-transparent">
+          <span className="block mt-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
             VOLTEACH
           </span>
         </h1>
@@ -106,15 +107,16 @@ export default function MainHome({
           <div className="relative">
             <input
               type="text"
-              placeholder="🔍 חפש קורס או נושא (לדוגמה: אינפי, מעגלים, לפלס)..."
+              placeholder="חפש קורס או נושא (לדוגמה: אינפי, מעגלים, לפלס)..."
               value={query}
               onChange={e => {
                 setQuery(e.target.value);
                 setDropdownActive(true);
               }}
               onFocus={() => setDropdownActive(true)}
-              className="w-full rounded-full border-none bg-slate-900/80 hover:bg-slate-900 p-5 px-8 text-base text-white placeholder-slate-500 shadow-lg focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-full border-none bg-slate-900/80 hover:bg-slate-900 p-5 px-8 pr-12 text-base text-white placeholder-slate-500 shadow-lg focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
+            <Search className="absolute right-5 top-5 h-5 w-5 text-slate-500" />
           </div>
 
           {/* SEARCH SUGGESTIONS DROPDOWN */}
@@ -123,7 +125,7 @@ export default function MainHome({
               {/* MATCHED COURSES */}
               {courses.length > 0 && (
                 <div className="mb-4">
-                  <div className="mb-2 border-b border-slate-900 pb-1 text-xs font-bold uppercase tracking-wider text-amber-400">
+                  <div className="mb-2 border-b border-slate-900 pb-1 text-xs font-bold uppercase tracking-wider text-emerald-400">
                     📚 קורסים אקדמיים
                   </div>
                   <div className="space-y-1">
@@ -134,16 +136,16 @@ export default function MainHome({
                           onSelectSearchCourse(title);
                           setDropdownActive(false);
                         }}
-                        className="flex cursor-pointer items-center justify-between rounded-xl bg-slate-900/40 p-3 hover:bg-slate-900"
+                        className="flex cursor-pointer items-center justify-between rounded-xl bg-slate-900/40 p-3 hover:bg-slate-900 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="text-lg">📘</span>
+                          <BookOpen className="h-5 w-5 text-emerald-400" />
                           <div>
                             <div className="text-sm font-semibold text-white">{title}</div>
                             <div className="text-xs text-slate-500">קורס לימוד שלם</div>
                           </div>
                         </div>
-                        <span className="text-indigo-400 text-xs font-mono">פתח ↗</span>
+                        <span className="text-emerald-400 text-xs font-mono">פתח ↗</span>
                       </div>
                     ))}
                   </div>
@@ -153,7 +155,7 @@ export default function MainHome({
               {/* MATCHED TOPICS */}
               {topics.length > 0 && (
                 <div>
-                  <div className="mb-2 border-b border-slate-900 pb-1 text-xs font-bold uppercase tracking-wider text-indigo-400">
+                  <div className="mb-2 border-b border-slate-900 pb-1 text-xs font-bold uppercase tracking-wider text-cyan-400">
                     ⚡ נושאי ליבה ונוסחאות
                   </div>
                   <div className="space-y-1">
@@ -164,16 +166,16 @@ export default function MainHome({
                           onSelectSearchTopic(course, topic);
                           setDropdownActive(false);
                         }}
-                        className="flex cursor-pointer items-center justify-between rounded-xl bg-slate-900/40 p-3 hover:bg-slate-900"
+                        className="flex cursor-pointer items-center justify-between rounded-xl bg-slate-900/40 p-3 hover:bg-slate-900 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="text-lg">⚙️</span>
+                          <Compass className="h-5 w-5 text-cyan-400" />
                           <div>
                             <div className="text-sm font-semibold text-white">{topic}</div>
                             <div className="text-xs text-slate-500">{course}</div>
                           </div>
                         </div>
-                        <span className="text-indigo-400 text-xs font-mono">מצב לימוד ↗</span>
+                        <span className="text-cyan-400 text-xs font-mono">מצב לימוד ↗</span>
                       </div>
                     ))}
                   </div>
@@ -187,18 +189,18 @@ export default function MainHome({
         <div className="mt-12 flex flex-col items-center justify-center gap-6 sm:flex-row">
           <button
             onClick={() => onSelectType('uni')}
-            className="group flex w-full max-w-xs cursor-pointer flex-col items-center rounded-3xl border border-slate-800 bg-slate-900/40 p-8 hover:bg-slate-900/90 transition-all hover:-translate-y-2 hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/10"
+            className="group flex w-full max-w-xs cursor-pointer flex-col items-center rounded-3xl border border-slate-800 bg-slate-900/40 p-8 hover:bg-slate-900/90 transition-all hover:-translate-y-2 hover:border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/10"
           >
-            <span className="text-5xl group-hover:scale-110 transition-transform">🏛️</span>
+            <School className="h-12 w-12 text-emerald-400 group-hover:scale-110 transition-transform duration-300" />
             <div className="mt-4 text-xl font-bold text-white">אוניברסיטאות</div>
             <div className="mt-2 text-xs text-slate-500">בחירה מתוך 6 אוניברסיטאות מובילות בישראל</div>
           </button>
 
           <button
             onClick={() => onSelectType('college')}
-            className="group flex w-full max-w-xs cursor-pointer flex-col items-center rounded-3xl border border-slate-800 bg-slate-900/40 p-8 hover:bg-slate-900/90 transition-all hover:-translate-y-2 hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/10"
+            className="group flex w-full max-w-xs cursor-pointer flex-col items-center rounded-3xl border border-slate-800 bg-slate-900/40 p-8 hover:bg-slate-900/90 transition-all hover:-translate-y-2 hover:border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/10"
           >
-            <span className="text-5xl group-hover:scale-110 transition-transform">🎓</span>
+            <GraduationCap className="h-12 w-12 text-cyan-400 group-hover:scale-110 transition-transform duration-300" />
             <div className="mt-4 text-xl font-bold text-white">מכללות אקדמיות</div>
             <div className="mt-2 text-xs text-slate-500">בחירה מתוך 8 מכללות מובילות בישראל</div>
           </button>

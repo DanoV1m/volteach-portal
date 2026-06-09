@@ -1,6 +1,6 @@
 import React from 'react';
 import { Institution } from '../types';
-import { ArrowLeft, ExternalLink, HardDrive } from 'lucide-react';
+import { ArrowLeft, ExternalLink, HardDrive, School, GraduationCap } from 'lucide-react';
 
 interface MainInstitutionsProps {
   type: 'uni' | 'college';
@@ -30,8 +30,9 @@ export default function MainInstitutions({
 
       {/* SECTION HEADER */}
       <div className="mb-12 text-center">
-        <div className="inline-block rounded-full border border-slate-800 bg-slate-900/80 px-4 py-1 text-xs font-bold text-amber-400">
-          {type === 'uni' ? '🏛️ אוניברסיטאות מובילות' : '🎓 מכללות מובילות'}
+        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-1 text-xs font-bold text-emerald-400">
+          {type === 'uni' ? <School className="h-4.5 w-4.5 text-emerald-400" /> : <GraduationCap className="h-4.5 w-4.5 text-cyan-400" />}
+          <span>{type === 'uni' ? 'אוניברסיטאות מובילות' : 'מכללות מובילות'}</span>
         </div>
         <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-4xl">
           בחר את מוסד הלימודים שלך
@@ -47,7 +48,7 @@ export default function MainInstitutions({
           <div
             key={inst.key}
             onClick={() => onSelectInstitution(inst.key)}
-            className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-500/40 hover:bg-slate-900/90 hover:shadow-2xl"
+            className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/40 hover:bg-slate-900/90 hover:shadow-2xl"
             style={{
               animation: 'slideUpFade 0.5s ease-out forwards',
               animationDelay: `${idx * 0.05}s`
@@ -55,7 +56,7 @@ export default function MainInstitutions({
           >
             <div>
               <div className="mb-4 text-4xl leading-none">{inst.emoji}</div>
-              <h3 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">
+              <h3 className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
                 {inst.name}
               </h3>
               <p className="mt-1 text-xs text-slate-500">📍 {inst.location}</p>

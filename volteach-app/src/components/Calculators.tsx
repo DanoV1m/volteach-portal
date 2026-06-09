@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Zap, Cpu, Activity, RefreshCw, BarChart2, Compass, Binary, HelpCircle } from 'lucide-react';
 
 export default function Calculators() {
   // Ohm's Law State
@@ -144,7 +145,7 @@ export default function Calculators() {
     if (isNaN(num)) return <span className="text-red-400">❌ ערך לא חוקי בבסיס זה</span>;
     return (
       <div className="space-y-1 text-right text-xs leading-relaxed">
-        <div><strong className="text-indigo-400">DEC:</strong> {num}</div>
+        <div><strong className="text-cyan-400">DEC:</strong> {num}</div>
         <div><strong className="text-emerald-400">BIN:</strong> {num.toString(2)}</div>
         <div><strong className="text-amber-400">HEX:</strong> {num.toString(16).toUpperCase()}</div>
         <div><strong className="text-pink-400">OCT:</strong> {num.toString(8)}</div>
@@ -196,10 +197,13 @@ export default function Calculators() {
         <button
           onClick={() => setOpenCat(openCat === 'circuits' ? null : 'circuits')}
           className={`w-full p-2 text-right text-xs font-bold flex items-center justify-between rounded-xl transition-all ${
-            openCat === 'circuits' ? 'bg-indigo-500/10 text-indigo-400' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+            openCat === 'circuits' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
           }`}
         >
-          <span>🔌 מעגלים והתקנים</span>
+          <span className="flex items-center gap-2">
+            <Cpu className="h-4 w-4 text-emerald-400" />
+            <span>מעגלים והתקנים</span>
+          </span>
           <span>{openCat === 'circuits' ? '▲' : '▼'}</span>
         </button>
 
@@ -208,38 +212,38 @@ export default function Calculators() {
             {/* 1. Ohm's Law */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-200">
-                <span>⚡</span> חוק אוהם
+                <Zap className="h-4 w-4 text-emerald-400" /> חוק אוהם
               </h4>
               <div className="space-y-2">
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="מתח V [V]"
                   value={ohmV}
                   onChange={e => setOhmV(e.target.value)}
                 />
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="זרם I [A]"
                   value={ohmI}
                   onChange={e => setOhmI(e.target.value)}
                 />
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="נגדות R [Ω]"
                   value={ohmR}
                   onChange={e => setOhmR(e.target.value)}
                 />
                 <button
                   onClick={handleCalcOhm}
-                  className="w-full rounded-lg bg-indigo-650 py-2 text-[10px] font-bold text-white hover:bg-indigo-600 transition-colors"
+                  className="w-full rounded-lg bg-emerald-600 py-2 text-[10px] font-bold text-white hover:bg-emerald-550 transition-colors"
                 >
                   חשב
                 </button>
                 {ohmRes && (
-                  <div className="mt-2 rounded-lg bg-indigo-950/40 border border-indigo-500/30 p-2 text-center text-xs text-indigo-200 word-break">
+                  <div className="mt-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-2 text-center text-xs text-emerald-200 word-break">
                     {ohmRes}
                   </div>
                 )}
@@ -249,24 +253,24 @@ export default function Calculators() {
             {/* 2. Parallel Resistors */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-200">
-                <span>🔌</span> נגדים במקביל (Req)
+                <Cpu className="h-4 w-4 text-emerald-400" /> נגדים במקביל (Req)
               </h4>
               <div className="space-y-2">
                 <input
                   type="text"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="ערכים מופרדים בפסיקים (לדוגמה: 10,20,30)"
                   value={paraVal}
                   onChange={e => setParaVal(e.target.value)}
                 />
                 <button
                   onClick={handleCalcParallel}
-                  className="w-full rounded-lg bg-indigo-650 py-2 text-[10px] font-bold text-white hover:bg-indigo-600 transition-colors"
+                  className="w-full rounded-lg bg-emerald-600 py-2 text-[10px] font-bold text-white hover:bg-emerald-550 transition-colors"
                 >
                   חשב
                 </button>
                 {paraRes && (
-                  <div className="mt-2 rounded-lg bg-indigo-950/40 border border-indigo-500/30 p-2 text-center text-xs text-indigo-450 word-break">
+                  <div className="mt-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-2 text-center text-xs text-emerald-250 word-break">
                     {paraRes}
                   </div>
                 )}
@@ -276,38 +280,38 @@ export default function Calculators() {
             {/* 3. Voltage Divider */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-200">
-                <span>⚡</span> מחלק מתח
+                <Zap className="h-4 w-4 text-emerald-400" /> מחלק מתח
               </h4>
               <div className="space-y-2">
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="מתח כניסה Vin [V]"
                   value={divVin}
                   onChange={e => setDivVin(e.target.value)}
                 />
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="נגד עליון R1 [Ω]"
                   value={divR1}
                   onChange={e => setDivR1(e.target.value)}
                 />
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="נגד תחתון R2 [Ω]"
                   value={divR2}
                   onChange={e => setDivR2(e.target.value)}
                 />
                 <button
                   onClick={handleCalcDivider}
-                  className="w-full rounded-lg bg-indigo-650 py-2 text-[10px] font-bold text-white hover:bg-indigo-600 transition-colors"
+                  className="w-full rounded-lg bg-emerald-600 py-2 text-[10px] font-bold text-white hover:bg-emerald-550 transition-colors"
                 >
                   חשב מתח מוצא
                 </button>
                 {divRes && (
-                  <div className="mt-2 rounded-lg bg-indigo-950/40 border border-indigo-500/30 p-2 text-center text-xs text-indigo-450 word-break">
+                  <div className="mt-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-2 text-center text-xs text-emerald-250 word-break">
                     {divRes}
                   </div>
                 )}
@@ -317,31 +321,31 @@ export default function Calculators() {
             {/* 4. RC Time Constant */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-200">
-                <span>📈</span> קבוע זמן RC
+                <Activity className="h-4 w-4 text-emerald-400" /> קבוע זמן RC
               </h4>
               <div className="space-y-2">
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="R [Ω]"
                   value={rcR}
                   onChange={e => setRcR(e.target.value)}
                 />
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="C [F]"
                   value={rcC}
                   onChange={e => setRcC(e.target.value)}
                 />
                 <button
                   onClick={handleCalcRC}
-                  className="w-full rounded-lg bg-indigo-650 py-2 text-[10px] font-bold text-white hover:bg-indigo-600 transition-colors"
+                  className="w-full rounded-lg bg-emerald-600 py-2 text-[10px] font-bold text-white hover:bg-emerald-550 transition-colors"
                 >
                   חשב
                 </button>
                 {rcRes && (
-                  <div className="mt-2 rounded-lg bg-indigo-950/40 border border-indigo-500/30 p-2 text-center text-xs text-indigo-400 word-break">
+                  <div className="mt-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-2 text-center text-xs text-emerald-400 word-break">
                     {rcRes}
                   </div>
                 )}
@@ -356,10 +360,13 @@ export default function Calculators() {
         <button
           onClick={() => setOpenCat(openCat === 'signals' ? null : 'signals')}
           className={`w-full p-2 text-right text-xs font-bold flex items-center justify-between rounded-xl transition-all ${
-            openCat === 'signals' ? 'bg-indigo-500/10 text-indigo-400' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+            openCat === 'signals' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
           }`}
         >
-          <span>📶 אותות ותקשורת</span>
+          <span className="flex items-center gap-2">
+            <Compass className="h-4 w-4 text-emerald-400" />
+            <span>אותות ותקשורת</span>
+          </span>
           <span>{openCat === 'signals' ? '▲' : '▼'}</span>
         </button>
 
@@ -368,19 +375,19 @@ export default function Calculators() {
             {/* 5. dB Converter */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-200">
-                <span>📊</span> ממיר dB
+                <BarChart2 className="h-4 w-4 text-emerald-400" /> ממיר dB
               </h4>
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <input
                     type="number"
-                    className="flex-1 rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                    className="flex-1 rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                     placeholder="יחס"
                     value={dbVal}
                     onChange={e => setDbVal(e.target.value)}
                   />
                   <select
-                    className="w-20 rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-indigo-500 focus:outline-none"
+                    className="w-20 rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-emerald-500 focus:outline-none"
                     value={dbType}
                     onChange={e => setDbType(e.target.value as any)}
                   >
@@ -390,12 +397,12 @@ export default function Calculators() {
                 </div>
                 <button
                   onClick={handleCalcDB}
-                  className="w-full rounded-lg bg-indigo-650 py-2 text-[10px] font-bold text-white hover:bg-indigo-600 transition-colors"
+                  className="w-full rounded-lg bg-emerald-600 py-2 text-[10px] font-bold text-white hover:bg-emerald-550 transition-colors"
                 >
                   המר ל-dB
                 </button>
                 {dbRes && (
-                  <div className="mt-2 rounded-lg bg-indigo-950/40 border border-indigo-500/30 p-2 text-center text-xs text-indigo-400 word-break">
+                  <div className="mt-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-2 text-center text-xs text-emerald-400 word-break">
                     {dbRes}
                   </div>
                 )}
@@ -405,19 +412,19 @@ export default function Calculators() {
             {/* 6. Frequency ↔ Period */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-200">
-                <span>🔄</span> תדר ↔ זמן מחזור
+                <RefreshCw className="h-4 w-4 text-emerald-400" /> תדר ↔ זמן מחזור
               </h4>
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <input
                     type="number"
-                    className="flex-1 rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                    className="flex-1 rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                     placeholder="ערך"
                     value={ftVal}
                     onChange={e => setFtVal(e.target.value)}
                   />
                   <select
-                    className="w-20 rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-indigo-500 focus:outline-none"
+                    className="w-20 rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-emerald-500 focus:outline-none"
                     value={ftMode}
                     onChange={e => setFtMode(e.target.value as any)}
                   >
@@ -426,7 +433,7 @@ export default function Calculators() {
                   </select>
                 </div>
                 <select
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-emerald-500 focus:outline-none"
                   value={ftUnit}
                   onChange={e => setFtUnit(e.target.value)}
                 >
@@ -437,12 +444,12 @@ export default function Calculators() {
                 </select>
                 <button
                   onClick={handleCalcFreqTime}
-                  className="w-full rounded-lg bg-indigo-650 py-2 text-[10px] font-bold text-white hover:bg-indigo-600 transition-colors"
+                  className="w-full rounded-lg bg-emerald-600 py-2 text-[10px] font-bold text-white hover:bg-emerald-550 transition-colors"
                 >
                   המר
                 </button>
                 {ftRes && (
-                  <div className="mt-2 rounded-lg bg-indigo-950/40 border border-indigo-500/30 p-2 text-center text-xs text-indigo-400 word-break">
+                  <div className="mt-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-2 text-center text-xs text-emerald-400 word-break">
                     {ftRes}
                   </div>
                 )}
@@ -457,10 +464,13 @@ export default function Calculators() {
         <button
           onClick={() => setOpenCat(openCat === 'math' ? null : 'math')}
           className={`w-full p-2 text-right text-xs font-bold flex items-center justify-between rounded-xl transition-all ${
-            openCat === 'math' ? 'bg-indigo-500/10 text-indigo-400' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+            openCat === 'math' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
           }`}
         >
-          <span>🔢 כלים מתמטיים וספרתיים</span>
+          <span className="flex items-center gap-2">
+            <Binary className="h-4 w-4 text-emerald-400" />
+            <span>כלים מתמטיים וספרתיים</span>
+          </span>
           <span>{openCat === 'math' ? '▲' : '▼'}</span>
         </button>
 
@@ -469,19 +479,19 @@ export default function Calculators() {
             {/* 7. Unit Prefix Converter */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-200">
-                <span>📐</span> המרת קידומות
+                <Compass className="h-4 w-4 text-emerald-400" /> המרת קידומות
               </h4>
               <div className="space-y-2">
                 <input
                   type="number"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="ערך"
                   value={prefVal}
                   onChange={e => setPrefVal(e.target.value)}
                 />
                 <div className="flex gap-2">
                   <select
-                    className="flex-grow rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-indigo-500/30 focus:outline-none"
+                    className="flex-grow rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-emerald-500/30 focus:outline-none"
                     value={prefFrom}
                     onChange={e => setPrefFrom(e.target.value)}
                   >
@@ -496,7 +506,7 @@ export default function Calculators() {
                     <option value="1e-12">p (פיקו)</option>
                   </select>
                   <select
-                    className="flex-grow rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-indigo-500 focus:outline-none"
+                    className="flex-grow rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-emerald-500 focus:outline-none"
                     value={prefTo}
                     onChange={e => setPrefTo(e.target.value)}
                   >
@@ -513,12 +523,12 @@ export default function Calculators() {
                 </div>
                 <button
                   onClick={handleCalcPrefix}
-                  className="w-full rounded-lg bg-indigo-650 py-2 text-[10px] font-bold text-white hover:bg-indigo-600 transition-colors"
+                  className="w-full rounded-lg bg-emerald-600 py-2 text-[10px] font-bold text-white hover:bg-emerald-550 transition-colors"
                 >
                   המר
                 </button>
                 {prefRes && (
-                  <div className="mt-2 rounded-lg bg-indigo-950/40 border border-indigo-500/30 p-2 text-center text-xs text-indigo-400 word-break">
+                  <div className="mt-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-2 text-center text-xs text-emerald-400 word-break">
                     {prefRes}
                   </div>
                 )}
@@ -528,18 +538,18 @@ export default function Calculators() {
             {/* 8. Base Converter */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-200">
-                <span>🔢</span> המרת בסיסים
+                <Binary className="h-4 w-4 text-emerald-400" /> המרת בסיסים
               </h4>
               <div className="space-y-2">
                 <input
                   type="text"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   placeholder="הזן מספר"
                   value={baseVal}
                   onChange={e => setBaseVal(e.target.value)}
                 />
                 <select
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-[10px] text-white focus:border-emerald-500 focus:outline-none"
                   value={baseFrom}
                   onChange={e => setBaseFrom(e.target.value)}
                 >
@@ -548,7 +558,7 @@ export default function Calculators() {
                   <option value="16">הקסדצימלי (HEX)</option>
                   <option value="8">אוקטלי (OCT)</option>
                 </select>
-                <div className="mt-2 rounded-lg bg-indigo-950/40 border border-indigo-500/30 p-3">
+                <div className="mt-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-3">
                   {getBaseConvContent()}
                 </div>
               </div>

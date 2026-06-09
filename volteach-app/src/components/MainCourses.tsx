@@ -150,8 +150,8 @@ export default function MainCourses({
 
       {/* HEADER EXPOSITION */}
       <div className="mb-12 text-center">
-        <div className="inline-block rounded-full border border-slate-800 bg-slate-900/80 px-4 py-1 text-xs font-bold text-amber-400">
-          ⚡ {institution.name} — שנה {YEAR_LABELS[year]} | סמסטר {SEM_LABELS[semester]}
+        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-1 text-xs font-bold text-emerald-400">
+          {institution.name} — שנה {YEAR_LABELS[year]} | סמסטר {SEM_LABELS[semester]}
         </div>
         <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-4xl">
           סנכרון תוכנית הלימודים
@@ -168,7 +168,7 @@ export default function MainCourses({
           </div>
           <div className="h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 transition-all duration-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+              className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -221,13 +221,13 @@ export default function MainCourses({
                               key={t}
                               onClick={() => setFlippedCards(p => ({ ...p, [`${c.title}_${t}`]: !flipped }))}
                               className={`relative min-h-[160px] cursor-pointer rounded-2xl border transition-all duration-500 [transform-style:preserve-3d] ${
-                                flipped ? '[transform:rotateY(180deg)] border-emerald-500 bg-emerald-950/20' : 'border-slate-800 bg-slate-900/60 hover:border-indigo-500/40'
+                                flipped ? '[transform:rotateY(180deg)] border-emerald-500 bg-emerald-950/20' : 'border-slate-800 bg-slate-900/60 hover:border-emerald-500/40'
                               }`}
                             >
                               {/* Front */}
                               <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center [backface-visibility:hidden]">
                                 <h4 className="text-sm font-bold text-white leading-relaxed">{t}</h4>
-                                <span className="absolute bottom-3 text-[10px] text-indigo-400 font-semibold tracking-wide">לחץ להפיכה ›</span>
+                                <span className="absolute bottom-3 text-[10px] text-cyan-400 font-semibold tracking-wide">לחץ להפיכה ›</span>
                               </div>
 
                               {/* Back */}
@@ -284,7 +284,7 @@ export default function MainCourses({
                                   {t}
                                 </span>
                               </div>
-                              <span className="text-xs text-indigo-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-xs text-emerald-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
                                 פתח הסבר ⚡
                               </span>
                             </li>
@@ -313,7 +313,7 @@ export default function MainCourses({
                       className={`rounded-2xl border p-3 text-xs font-bold transition-all shadow-md active:scale-95 ${
                         isMarathonActive
                           ? 'bg-amber-500 border-amber-400 text-slate-950'
-                          : 'bg-gradient-to-r from-indigo-700 to-purple-800 border-indigo-600/40 text-rose-100'
+                          : 'bg-gradient-to-r from-emerald-700 to-teal-800 border-emerald-600/40 text-rose-100'
                       }`}
                     >
                       ⏱️ {isMarathonActive ? 'סגור קלפי שינון' : 'קלפי שינון למרתון'}
@@ -323,7 +323,7 @@ export default function MainCourses({
                   {/* USER NOTEBOOK PAD */}
                   <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-5 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-bold text-indigo-300">
+                      <h4 className="text-sm font-bold text-emerald-400">
                         📖 פנקס למידה ונוסחאות מותאמות
                       </h4>
                       <span className="text-[10px] text-slate-500">נשמר באופן מקומי מיידית</span>
@@ -333,7 +333,7 @@ export default function MainCourses({
                       placeholder="הערות אישיות לקורס, נושאים קשים לשיפור..."
                       value={nb.notes}
                       onChange={e => saveNotebookData(c.title, e.target.value, nb.formulas)}
-                      className="w-full h-20 rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 text-xs text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none"
+                      className="w-full h-20 rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 text-xs text-white placeholder-slate-600 focus:border-emerald-500 focus:outline-none"
                     />
 
                     <div className="space-y-2">
@@ -342,7 +342,7 @@ export default function MainCourses({
                         placeholder="רשימת נוסחאות (לדוגמה: $$ V_{th} = V_{oc} $$)"
                         value={nb.formulas}
                         onChange={e => saveNotebookData(c.title, nb.notes, e.target.value)}
-                        className="w-full rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 text-xs text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none font-mono"
+                        className="w-full rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 text-xs text-white placeholder-slate-600 focus:border-emerald-500 focus:outline-none font-mono"
                       />
 
                       {/* LIVE MATH PREVIEW WINDOW */}

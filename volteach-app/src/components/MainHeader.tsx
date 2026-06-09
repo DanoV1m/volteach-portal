@@ -30,12 +30,10 @@ export default function MainHeader({
         {/* LOGO */}
         <div 
           onClick={onGoHome}
-          className="flex cursor-pointer items-center gap-3 text-xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500 bg-clip-text text-transparent"
+          className="flex cursor-pointer items-center gap-3 text-xl font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(99,102,241,0.3)]">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.25)] overflow-hidden">
+            <img src="/assets/logo.png" alt="VOLTEACH Logo" className="h-full w-full object-cover" />
           </div>
           <span>VOLTEACH</span>
         </div>
@@ -50,7 +48,7 @@ export default function MainHeader({
         {/* MY FORMULAS BUTTON */}
         <button
           onClick={onOpenMyFormulas}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 px-4 py-2 text-sm font-bold text-white transition-all shadow-[0_4px_12px_rgba(99,102,241,0.2)]"
+          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600/90 hover:bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition-all shadow-[0_4px_12px_rgba(16,185,129,0.2)]"
         >
           <BookOpen className="h-4 w-4" />
           <span>הנוסחאות שלי</span>
@@ -59,7 +57,7 @@ export default function MainHeader({
         {/* CACHE / NETWORK STATE BADGE */}
         <div 
           onClick={onShowCacheInfo}
-          className="hidden sm:flex cursor-pointer items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 transition-all hover:border-indigo-500/40 hover:text-slate-100"
+          className="hidden sm:flex cursor-pointer items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 transition-all hover:border-emerald-500/40 hover:text-slate-100"
           title="סטטוס חיבור ו-Cache"
         >
           <div className={`h-2.5 w-2.5 rounded-full ${cacheDotClass}`}></div>
@@ -78,7 +76,7 @@ export default function MainHeader({
                 </span>
               </div>
               
-              <div className="h-9 w-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-sm" title={user.email || ''}>
+              <div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm" title={user.email || ''}>
                 {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
               </div>
 
@@ -93,7 +91,7 @@ export default function MainHeader({
           ) : (
             <button
               onClick={onOpenAuth}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 hover:border-indigo-500/60 bg-indigo-500/10 hover:bg-indigo-500/20 px-3.5 py-2 text-xs font-bold text-indigo-300 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 hover:border-emerald-500/60 bg-emerald-500/10 hover:bg-emerald-500/20 px-3.5 py-2 text-xs font-bold text-emerald-300 transition-all cursor-pointer"
             >
               <LogIn className="h-4 w-4" />
               <span>התחברות</span>
