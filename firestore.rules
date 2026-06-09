@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global safety net catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Standard high-security global helpers
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+    
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    function incoming() { 
+      return request.resource.data; 
+    }
+    
+    function existing() { 
+      return resource.data; 
+    }
+    
+    function isOwner(userId) { 
+      return isSignedIn() && request.auth.uid == userId; 
+    }
+
+    // 2. User Profiles - Master records containing info of registered student profiles
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow create: if isSignedIn() && isOwner(userId) && isValidId(userId)
+        && incoming().uid == userId
+        && incoming().email is string && incoming().email.size() <= 256
+        && incoming().createdAt == request.time;
+      allow update: if isOwner(userId) && isValidId(userId)
+        && incoming().uid == userId
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt;
+    }
+
+    // 3. User saved formulas subcollection
+    match /users/{userId}/formulas/{formulaId} {
+      allow list: if isOwner(userId);
+      allow get, delete: if isOwner(userId) && isValidId(userId) && isValidId(formulaId);
+      allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(formulaId)
+        && incoming().userId == userId
+        && incoming().id is string && incoming().id.size() <= 128
+        && incoming().title is string && incoming().title.size() <= 256
+        && incoming().latex is string && incoming().latex.size() <= 1024
+        && incoming().createdAt == request.time;
+      allow update: if isOwner(userId) && isValidId(userId) && isValidId(formulaId)
+        && incoming().userId == userId
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt;
+    }
+  }
+}
