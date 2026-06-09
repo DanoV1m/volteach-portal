@@ -33,7 +33,7 @@ export default function MainHeader({
           className="flex cursor-pointer items-center gap-3 text-xl font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent"
         >
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.25)] overflow-hidden">
-            <img src="/assets/logo.png" alt="VOLTEACH Logo" className="h-full w-full object-cover" />
+            <img src="/logo.png" alt="VOLTEACH Logo" className="h-full w-full object-cover" />
           </div>
           <span>VOLTEACH</span>
         </div>
