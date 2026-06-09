@@ -1,10 +1,27 @@
 # <img src="./volteach-app/assets/logo.png" width="40" align="right" /> VOLTEACH - פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל
 
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Badge" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TS Badge" />
+  <img src="https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white" alt="Firebase Badge" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD627" alt="Vite Badge" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind Badge" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="MIT License Badge" />
+</p>
+
 [English Version Below]
 
 **VOLTEACH** הוא פורטל למידה מתקדם, רספונסיבי ועשיר בכלים, שפותח במיוחד עבור סטודנטים להנדסת חשמל ואלקטרוניקה בישראל. הפורטל מרכז במקום אחד סילבוסים אקדמיים, כלי עזר הנדסיים, מחשבונים ייעודיים, דפי נוסחאות אינטראקטיביים, סימולטורים של מבחנים וחומרי לימוד ישירים מהדרייב.
 
 👉 **לאתר החי (Live Demo):** [https://volteach-portal.web.app](https://volteach-portal.web.app)
+
+---
+
+### 🖥️ תצוגה מקדימה של הממשק (Showcase)
+
+<p align="center">
+  <img src="./volteach-app/assets/screenshot.png" width="90%" alt="VOLTEACH UI Screenshot" />
+</p>
 
 ---
 
@@ -40,9 +57,26 @@
 
 # <img src="./volteach-app/assets/logo.png" width="40" align="right" /> VOLTEACH - Electrical Engineering Student Portal
 
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Badge" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TS Badge" />
+  <img src="https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white" alt="Firebase Badge" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD627" alt="Vite Badge" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind Badge" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="MIT License Badge" />
+</p>
+
 VOLTEACH is a modern, responsive, and feature-rich learning portal designed specifically for Electrical and Electronics Engineering students in Israel. It consolidates academic syllabi, engineering tools, calculators, customizable formula sheets, exam simulators, and educational materials into a single premium workspace.
 
 👉 **Live Demo:** [https://volteach-portal.web.app](https://volteach-portal.web.app)
+
+---
+
+### 🖥️ Interface Showcase
+
+<p align="center">
+  <img src="./volteach-app/assets/screenshot.png" width="90%" alt="VOLTEACH UI Screenshot" />
+</p>
 
 ---
 
