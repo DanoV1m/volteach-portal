@@ -1,3 +1,43 @@
+# VOLTEACH ⚡ - פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל
+
+[English Version Below]
+
+**VOLTEACH** הוא פורטל למידה מתקדם, רספונסיבי ועשיר בכלים, שפותח במיוחד עבור סטודנטים להנדסת חשמל ואלקטרוניקה בישראל. הפורטל מרכז במקום אחד סילבוסים אקדמיים, כלי עזר הנדסיים, מחשבונים ייעודיים, דפי נוסחאות אינטראקטיביים, סימולטורים של מבחנים וחומרי לימוד ישירים מהדרייב.
+
+👉 **לאתר החי (Live Demo):** [https://volteach-portal.web.app](https://volteach-portal.web.app)
+
+---
+
+## 📖 אודות יוצר האתר
+הפרויקט פותח ונבנה מתוך תשוקה רבה על ידי **מהנדס חשמל בתחילת דרכו אקדמית ומקצועית**. המטרה המרכזית של VOLTEACH היא להנגיש ולהקל על עומס הלמידה של סטודנטים להנדסה בארץ, לרכז עבורם את הכלים הנדרשים ללמידה יומיומית, ולתמוך בהצלחתם האקדמית בצורה חכמה ומודרנית.
+
+---
+
+## 🚀 תכונות עיקריות (Features)
+
+* 📅 **סנכרון תוכנית הלימודים (סילבוסים)**: תוכניות לימוד מותאמות אישית (שנים א' עד ד'/ה') עבור מוסדות הלימוד המובילים בארץ: הטכניון, אוניברסיטת תל אביב, אוניברסיטת בן-גוריון, בר-אילן, העברית, אריאל, מכללת אפקה, HIT (חולון), סמי שמעון, בראודה, עזריאלי ירושלים, כנרת ומכון לב.
+* 🎚️ **בורר מסלולים דינמי לרופין**: אפשרות מעבר בלחיצת כפתור בין מסלול רגיל (4 שנים) למסלול מורחב בפריסה חמש-שנתית.
+* 🔌 **מחשבונים הנדסיים בסרגל הכלים (ממוינים לפי קטגוריות)**:
+  * **מעגלים והתקנים**: חוק אוהם (חישוב V, I, R, P), חישוב התנגדות שקולה במקביל (Req), מחלק מתח (Voltage Divider), וקבוע זמן RC.
+  * **אותות ותקשורת**: ממיר יחסי dB (הספק ומתח) והמרת תדר ↔ זמן מחזור.
+  * **כלים מתמטיים וספרתיים**: המרת קידומות (מגה, קילו, מיקרו וכד') והמרת בסיסי מספרים (DEC, BIN, HEX, OCT).
+* 📖 **מחברת נוסחאות אישית ומסונכרנת**: שמירה, ניהול, הדפסה (ל-PDF) ושיתוף של נוסחאות חשמליות. המערכת מסונכרנת לענן (Firebase Firestore) למשתמשים מחוברים, או נשמרת מקומית (LocalStorage) לאורחים.
+* ➕ **הוספה ומחיקה של נוסחאות מהירות**: אפשרות להוסיף נוסחאות מהירות מותאמות אישית ישירות לסרגל הכלים באמצעות כתיבת קוד LaTeX.
+* 📐 **זהויות טריגונומטריות**: דף זהויות טריגונומטריות מובנה לגישה מהירה בזמן פתרון מטלות.
+* ⏱️ **כרטיסיות שינון למרתון וסימולציות מבחנים**: כרטיסיות שינון אינטראקטיביות להבנת מושגים אקדמיים לפני בחינה.
+* 📁 **אינטגרציה מלאה ל-Google Drive**: תצוגה מובנית של תיקיות הדרייב המוסדיות המכילות מצגות, תרגולים ומבחני עבר.
+
+---
+
+## 🛠️ טכנולוגיות (Tech Stack)
+
+* **Frontend**: React, Vite, TypeScript, Tailwind CSS
+* **Aesthetics & UI**: Vanilla CSS, Glassmorphic Design, Custom Sleek Scrollbars
+* **Database & Auth**: Firebase Auth (Google, GitHub, and Email/Password), Cloud Firestore (syncing data)
+* **Math Rendering**: KaTeX (LaTeX integration)
+
+---
+
 # VOLTEACH ⚡ - Electrical Engineering Student Portal
 
 VOLTEACH is a modern, responsive, and feature-rich learning portal designed specifically for Electrical and Electronics Engineering students in Israel. It consolidates academic syllabi, engineering tools, calculators, customizable formula sheets, exam simulators, and educational materials into a single premium workspace.
@@ -45,7 +85,7 @@ VOLTEACH is a modern, responsive, and feature-rich learning portal designed spec
 ### Installation Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/volteach-portal.git
+   git clone https://github.com/DanoV1m/volteach-portal.git
    cd volteach-portal
    ```
 2. Install dependencies:
