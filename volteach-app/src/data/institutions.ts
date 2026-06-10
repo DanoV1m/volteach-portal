@@ -102,8 +102,8 @@ export const institutions: Institution[] = [
   },
   {
     key: 'braude',
-    name: 'מכללת ברודה',
-    fullName: 'מכללת ברודה — כרמיאל',
+    name: 'מכללת בראודה',
+    fullName: 'מכללת בראודה — כרמיאל',
     location: 'כרמיאל',
     emoji: '🔬',
     type: 'college',
