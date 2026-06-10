@@ -34,6 +34,8 @@ if (!serviceAccount) {
   process.exit(1);
 }
 
+console.log('Project ID from Service Account:', serviceAccount.project_id);
+
 // Initialize Admin App
 const app = initializeApp({
   credential: cert(serviceAccount)
