@@ -1,4 +1,5 @@
-import admin from 'firebase-admin';
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -34,11 +35,11 @@ if (!serviceAccount) {
 }
 
 // Initialize Admin App
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+const app = initializeApp({
+  credential: cert(serviceAccount)
 });
 
-const db = admin.firestore();
+const db = getFirestore(app);
 
 // Helpers for CSV writing with UTF-8 BOM
 const BOM = '\uFEFF';
