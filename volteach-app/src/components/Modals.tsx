@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Award, Clock, HelpCircle, Loader2 } from 'lucide-react';
+import { X, Send, Award, Clock, HelpCircle, Loader2, Upload, Link2, FileText, Sparkles, FolderOpen } from 'lucide-react';
 import { CourseEnrichment, Institution, TopicKnowledge } from '../types';
 import { courseEnrichment, topicKnowledge } from '../data/enrichment';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { auth, db, handleFirestoreError, OperationType } from '../firebase';
 
 // ==========================================
 // 1. CONTACT MODAL
@@ -952,6 +954,335 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 5. UPLOAD RESOURCE MODAL
+// ==========================================
+interface UploadResourceModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  institution: Institution;
+  courseTitle: string;
+  user: any;
+  onSuccess: (msg: string) => void;
+}
+
+export function UploadResourceModal({ isOpen, onClose, institution, courseTitle, user, onSuccess }: UploadResourceModalProps) {
+  const [tab, setTab] = useState<'link' | 'drive'>('link');
+  const [fileUrl, setFileUrl] = useState('');
+  const [fileName, setFileName] = useState('');
+  
+  // AI Analyzed details
+  const [aiTitle, setAiTitle] = useState('');
+  const [aiCategory, setAiCategory] = useState<'summary' | 'exam' | 'exercise'>('summary');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [step, setStep] = useState<'input' | 'preview'>('input');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFileUrl('');
+      setFileName('');
+      setAiTitle('');
+      setAiCategory('summary');
+      setStep('input');
+      setIsAnalyzing(false);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const queryBackend = async (promptMsg: string) => {
+    const res = await fetch("/api/gemini", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: promptMsg }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    return data.text;
+  };
+
+  const handleManualAnalyze = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fileUrl.trim() || !fileName.trim()) {
+      showToast('נא למלא את כל השדות', 'error');
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    setStep('preview');
+    try {
+      // Call Gemini API wrapper to categorize
+      const prompt = `אתה עוזר הוראה חכם בפורטל VOLTEACH להנדסת חשמל.
+הסטודנט משתף קובץ לימודי בשם: "${fileName}"
+עבור הקורס: "${courseTitle}"
+במוסד הלימודים: "${institution.name}"
+קישור לקובץ: "${fileUrl}"
+
+אנא נתח את שם הקובץ והצע כותרת יפה, נקייה ומקצועית בעברית וסווג לקטגוריה מתאימה.
+החזר אך ורק אובייקט JSON תקין (ללא תגים מקדימים וללא כוכביות) במבנה הבא:
+{
+  "title": "כותרת קריאה וברורה בעברית (למשל: סיכום משפטי רשת, או: מבחן מועד א 2025)",
+  "category": "summary" | "exam" | "exercise"
+}`;
+
+      const resText = await queryBackend(prompt);
+      const cleanJson = resText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleanJson);
+      
+      setAiTitle(parsed.title || fileName);
+      setAiCategory(parsed.category || 'summary');
+    } catch (err) {
+      console.error(err);
+      // Fallback
+      setAiTitle(fileName);
+      setAiCategory('summary');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleSaveToFirestore = async () => {
+    if (!aiTitle.trim()) {
+      showToast('נא להזין כותרת', 'error');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const resourceId = `resource_${Date.now()}`;
+      await setDoc(doc(db, 'community_resources', resourceId), {
+        id: resourceId,
+        title: aiTitle,
+        category: aiCategory,
+        webViewLink: fileUrl,
+        institutionKey: institution.key,
+        courseTitle: courseTitle,
+        upvotes: 0,
+        upvotedBy: [],
+        contributorName: user?.displayName || user?.email?.split('@')[0] || 'סטודנט אורח',
+        contributorUid: user?.uid || 'guest',
+        createdAt: serverTimestamp()
+      });
+      onSuccess('החומר הלימודי נוסף בהצלחה למאגר הקהילתי! ⚡');
+      onClose();
+    } catch (err) {
+      console.error(err);
+      showToast('שגיאה בשמירת הרשומה במאגר', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGooglePicker = () => {
+    if (!(window as any).google || !(window as any).gapi) {
+      showToast('שירותי Google אינם זמינים כעת', 'error');
+      return;
+    }
+
+    try {
+      // 1. Get access token from Google
+      const tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
+        client_id: '533175766403-dummy.apps.googleusercontent.com', // fallback/dummy web client
+        scope: 'https://www.googleapis.com/auth/drive.readonly',
+        callback: async (tokenResponse: any) => {
+          if (tokenResponse.error !== undefined) {
+            console.error(tokenResponse);
+            showToast('חיבור הדרייב בוטל או נכשל', 'error');
+            return;
+          }
+          const accessToken = tokenResponse.access_token;
+          
+          // 2. Open Picker
+          (window as any).gapi.load('picker', () => {
+            const picker = new (window as any).google.picker.PickerBuilder()
+              .addView((window as any).google.picker.ViewId.DOCS)
+              .setOAuthToken(accessToken)
+              .setDeveloperKey('AIzaSyAWD4ZpPh5yaDUIHp8PAlnUjBOLzcevBbU')
+              .setCallback(async (data: any) => {
+                if (data.action === (window as any).google.picker.Action.PICKED) {
+                  const docFile = data.docs[0];
+                  setFileUrl(docFile.url);
+                  setFileName(docFile.name);
+                  setTab('link'); // Switch to editor
+                  showToast('הקובץ נבחר בהצלחה! ה-AI כעת מוכן לנתח אותו.', 'success');
+                }
+              })
+              .build();
+            picker.setVisible(true);
+          });
+        },
+      });
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+    } catch (err) {
+      console.error(err);
+      showToast('שגיאה בהפעלת מנגנון גוגל דרייב', 'error');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md">
+      <div className="relative w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900 p-6 md:p-8 text-right shadow-2xl">
+        <button onClick={onClose} className="absolute left-4 top-4 rounded-xl border border-slate-800 bg-slate-950 p-2 text-slate-400 hover:bg-slate-900 hover:text-white">
+          <X className="h-4.5 w-4.5" />
+        </button>
+
+        <div className="mb-6">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <Upload className="h-5 w-5 text-emerald-400" />
+            <span>העלאת חומר לימודי למאגר השיתופי</span>
+          </h3>
+          <p className="text-xs text-slate-400 mt-1">שתף חומר לימודי לקורס <strong>{courseTitle}</strong> לטובת שאר הסטודנטים ב-<strong>{institution.name}</strong>.</p>
+        </div>
+
+        {step === 'input' ? (
+          <div className="space-y-4">
+            {/* Tabs */}
+            <div className="flex border-b border-slate-800 bg-slate-950/40 rounded-xl overflow-hidden p-0.5">
+              <button 
+                onClick={() => setTab('link')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tab === 'link' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                🔗 הדבקת קישור ידני
+              </button>
+              <button 
+                onClick={() => setTab('drive')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tab === 'drive' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                🤖 חיבור Google Drive
+              </button>
+            </div>
+
+            {tab === 'drive' ? (
+              <div className="text-center py-8 space-y-4 bg-slate-950/20 rounded-2xl border border-slate-850">
+                <FolderOpen className="h-10 w-10 text-emerald-400 mx-auto" />
+                <p className="text-xs text-slate-350 max-w-xs mx-auto leading-relaxed">
+                  התחבר לדרייב האקדמי או האישי שלך, בחר קובץ, והמערכת תהפוך אותו לציבורי לצפייה ותייצר עבורו מזהה AI.
+                </p>
+                <button 
+                  onClick={handleGooglePicker}
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-550 px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all inline-flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span>בחר קובץ מה-Google Drive שלי</span>
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleManualAnalyze} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400">קישור שיתוף ציבורי לקובץ *</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 right-3 flex items-center text-slate-500">
+                      <Link2 className="h-4 w-4" />
+                    </span>
+                    <input 
+                      type="url" 
+                      required 
+                      value={fileUrl} 
+                      onChange={e => setFileUrl(e.target.value)} 
+                      placeholder="https://drive.google.com/file/d/..." 
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 pr-10 text-xs text-white focus:border-emerald-500 focus:outline-none direction-ltr text-right"
+                    />
+                  </div>
+                  <span className="text-[10px] text-slate-500">ניתן להדביק קישורי Drive, Dropbox, OneDrive או כל קישור ישיר אחר.</span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400">שם הקובץ המקורי (למשל: סילבוס מעגלים, או מועד א 2026) *</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 right-3 flex items-center text-slate-500">
+                      <FileText className="h-4 w-4" />
+                    </span>
+                    <input 
+                      type="text" 
+                      required 
+                      value={fileName} 
+                      onChange={e => setFileName(e.target.value)} 
+                      placeholder="מבחן מעגלים_2026_א.pdf" 
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 pr-10 text-xs text-white focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 py-3.5 text-xs font-bold text-white shadow-lg transition-all hover:opacity-95 flex items-center justify-center gap-1.5">
+                  <Sparkles className="h-4 w-4" />
+                  <span>נתח וקטלג קובץ באמצעות AI</span>
+                </button>
+              </form>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-5 animate-fadeIn">
+            {isAnalyzing ? (
+              <div className="py-12 text-center space-y-4">
+                <Loader2 className="h-10 w-10 text-emerald-500 animate-spin mx-auto" />
+                <p className="text-xs font-bold text-slate-350">Gemini סורק ומנתח את פרטי הקובץ...</p>
+                <p className="text-[10px] text-slate-500">אנחנו יוצרים עבורו כותרת מסודרת ומסווגים לקטגוריה רלוונטית בקורס.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-emerald-950/10 border border-emerald-500/20 p-4.5 rounded-2xl space-y-3">
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-1">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>תוצאות ניתוח ה-AI</span>
+                  </span>
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-400">שם הקובץ שיעלה למאגר (ניתן לעריכה):</label>
+                      <input 
+                        type="text" 
+                        value={aiTitle} 
+                        onChange={e => setAiTitle(e.target.value)} 
+                        className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-white focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-400">קטגוריה:</label>
+                      <select 
+                        value={aiCategory} 
+                        onChange={e => setAiCategory(e.target.value as any)} 
+                        className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-white focus:border-emerald-500 focus:outline-none"
+                      >
+                        <option value="summary">📘 סיכום שיעור / קורס</option>
+                        <option value="exam">📝 פתרון מבחן או בחינה</option>
+                        <option value="exercise">✏️ תרגול בית או מטלה</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setStep('input')} 
+                    className="flex-1 rounded-2xl border border-slate-800 bg-slate-950 p-3 text-xs font-bold text-slate-300 hover:text-white"
+                  >
+                    חזור
+                  </button>
+                  <button 
+                    onClick={handleSaveToFirestore} 
+                    disabled={submitting}
+                    className="flex-[2] rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 py-3 text-xs font-bold text-white shadow-md hover:opacity-95 flex items-center justify-center gap-1.5"
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <span>אשר והוסף למאגר הקהילה ✨</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

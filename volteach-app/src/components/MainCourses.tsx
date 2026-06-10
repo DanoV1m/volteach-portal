@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, CheckSquare, Square, ThumbsUp, RefreshCw, ExternalLink, Award } from 'lucide-react';
+import { ArrowLeft, CheckSquare, Square, ThumbsUp, RefreshCw, ExternalLink, Award, Upload, FileText, Calendar, Link } from 'lucide-react';
 import { Course, Institution } from '../types';
 import { topicKnowledge } from '../data/enrichment';
+import { collection, query, where, onSnapshot, updateDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { db, auth } from '../firebase';
+import { UploadResourceModal } from './Modals';
 
 interface MainCoursesProps {
   institution: Institution;
@@ -28,6 +31,61 @@ export default function MainCourses({
   const [completions, setCompletions] = useState<Record<string, boolean>>({});
   const [notebooks, setNotebooks] = useState<Record<string, { notes: string; formulas: string }>>({});
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
+
+  const [resources, setResources] = useState<any[]>([]);
+  const [activeUploadCourse, setActiveUploadCourse] = useState<string | null>(null);
+
+  // Subscribe to community resources
+  useEffect(() => {
+    const q = query(
+      collection(db, 'community_resources'),
+      where('institutionKey', '==', institution.key)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const list: any[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      // Sort by upvotes desc, then date desc
+      list.sort((a, b) => {
+        const diff = (b.upvotes || 0) - (a.upvotes || 0);
+        if (diff !== 0) return diff;
+        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+      });
+      setResources(list);
+    }, (error) => {
+      console.error("Firestore resources subscription error:", error);
+    });
+    return () => unsubscribe();
+  }, [institution.key]);
+
+  const handleUpvote = async (resourceId: string, currentUpvotes: number, upvotedBy: string[] = []) => {
+    const curUser = auth.currentUser;
+    if (!curUser) {
+      showToast('עליך להתחבר כדי להצביע לחומרים לימודיים', 'error');
+      return;
+    }
+    const resourceRef = doc(db, 'community_resources', resourceId);
+    const hasUpvoted = upvotedBy.includes(curUser.uid);
+    try {
+      if (hasUpvoted) {
+        await updateDoc(resourceRef, {
+          upvotes: currentUpvotes - 1,
+          upvotedBy: arrayRemove(curUser.uid)
+        });
+        showToast('הסרת את ההצבעה שלך', 'info');
+      } else {
+        await updateDoc(resourceRef, {
+          upvotes: currentUpvotes + 1,
+          upvotedBy: arrayUnion(curUser.uid)
+        });
+        showToast('תודה! הצבעתך נקלטה.', 'success');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('שגיאה בעדכון ההצבעה', 'error');
+    }
+  };
 
   const YEAR_LABELS: Record<number, string> = { 1: "א'", 2: "ב'", 3: "ג'", 4: "ד'", 5: "ה'" };
   const SEM_LABELS: Record<number, string> = { 1: "א'", 2: "ב'" };
@@ -320,6 +378,73 @@ export default function MainCourses({
                     </button>
                   </div>
 
+                  {/* COLLABORATIVE STUDY REPOSITORY (AI) */}
+                  <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                      <div className="text-right">
+                        <h4 className="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+                          <FileText className="h-4.5 w-4.5 text-emerald-400" />
+                          <span>מאגר חומרי לימוד שיתופי (קהילה & AI)</span>
+                        </h4>
+                        <p className="text-[10px] text-slate-500 mt-0.5">סיכומים, פתרונות ומטלות ששותפו על ידי הסטודנטים בקורס זה.</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (!auth.currentUser) {
+                            showToast('אנא התחבר לחשבונך כדי לשתף חומרים', 'error');
+                          } else {
+                            setActiveUploadCourse(c.title);
+                          }
+                        }}
+                        className="inline-flex items-center gap-1 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 py-1.5 px-3 text-[11px] font-bold text-white transition-all shadow-sm self-start sm:self-center"
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                        <span>שתף קובץ מהדרייב</span>
+                      </button>
+                    </div>
+
+                    {/* Resources list */}
+                    {resources.filter(r => r.courseTitle === c.title).length === 0 ? (
+                      <p className="text-xs text-slate-500 py-2 text-center">אין עדיין חומרים משותפים לקורס זה. היה הראשון לשתף! ⚡</p>
+                    ) : (
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {resources.filter(r => r.courseTitle === c.title).map(r => {
+                          const hasUpvoted = r.upvotedBy?.includes(auth.currentUser?.uid || '');
+                          return (
+                            <div key={r.id} className="flex items-center justify-between rounded-2xl border border-slate-850 bg-slate-900/30 p-3 hover:border-slate-800 transition-all">
+                              <a 
+                                href={r.webViewLink} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="flex items-center gap-3 min-w-0 flex-1 hover:text-emerald-400 transition-colors"
+                              >
+                                <div className="text-xl shrink-0">
+                                  {r.category === 'exam' ? '📝' : r.category === 'exercise' ? '✏️' : '📘'}
+                                </div>
+                                <div className="min-w-0 text-right">
+                                  <p className="text-xs font-bold text-slate-200 truncate">{r.title}</p>
+                                  <p className="text-[9px] text-slate-500 truncate">הועלה ע"י {r.contributorName}</p>
+                                </div>
+                              </a>
+
+                              <button
+                                onClick={() => handleUpvote(r.id, r.upvotes || 0, r.upvotedBy || [])}
+                                className={`flex items-center gap-1 rounded-xl py-1 px-2.5 text-[10px] font-bold transition-all border ${
+                                  hasUpvoted 
+                                    ? 'bg-emerald-600/20 border-emerald-500/30 text-emerald-400' 
+                                    : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:text-slate-200'
+                                }`}
+                              >
+                                <ThumbsUp className="h-3 w-3" />
+                                <span>{r.upvotes || 0}</span>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
                   {/* USER NOTEBOOK PAD */}
                   <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-5 space-y-4">
                     <div className="flex items-center justify-between">
@@ -399,6 +524,17 @@ export default function MainCourses({
             />
           </div>
         </div>
+      )}
+      {/* UPLOAD MODAL POPUP */}
+      {activeUploadCourse && (
+        <UploadResourceModal
+          isOpen={!!activeUploadCourse}
+          onClose={() => setActiveUploadCourse(null)}
+          institution={institution}
+          courseTitle={activeUploadCourse}
+          user={auth.currentUser}
+          onSuccess={(msg) => showToast(msg, 'success')}
+        />
       )}
     </section>
   );
