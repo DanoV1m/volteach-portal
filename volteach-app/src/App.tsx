@@ -442,7 +442,7 @@ export default function App() {
         {/* SIDEBAR FOR MATHEMATICAL FORMULAS & CALCULATORS */}
         <aside 
           className={`fixed right-0 top-20 bottom-0 z-40 bg-slate-950 border-l border-slate-900/80 transition-all duration-350 overflow-y-auto ${
-            isSidebarCollapsed ? 'w-14' : 'w-80'
+            isSidebarCollapsed ? 'w-12 md:w-14' : 'w-full sm:w-80 shadow-2xl'
           }`}
         >
           {/* Collapse toggle */}
@@ -615,7 +615,7 @@ export default function App() {
         {/* MAIN BODY AREA */}
         <main 
           className={`flex-1 min-h-[calc(100vh-80px)] transition-all duration-350 ${
-            isSidebarCollapsed ? 'mr-14' : 'mr-80'
+            isSidebarCollapsed ? 'mr-12 md:mr-14' : 'mr-12 md:mr-80'
           }`}
         >
           {/* VIEW ROUTING ROUTER */}

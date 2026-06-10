@@ -51,7 +51,7 @@ export default function MainHeader({
           className="inline-flex items-center gap-2 rounded-lg bg-emerald-600/90 hover:bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition-all shadow-[0_4px_12px_rgba(16,185,129,0.2)]"
         >
           <BookOpen className="h-4 w-4" />
-          <span>הנוסחאות שלי</span>
+          <span className="hidden sm:inline">הנוסחאות שלי</span>
         </button>
 
         {/* CACHE / NETWORK STATE BADGE */}
@@ -94,7 +94,7 @@ export default function MainHeader({
               className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 hover:border-emerald-500/60 bg-emerald-500/10 hover:bg-emerald-500/20 px-3.5 py-2 text-xs font-bold text-emerald-300 transition-all cursor-pointer"
             >
               <LogIn className="h-4 w-4" />
-              <span>התחברות</span>
+              <span className="hidden sm:inline">התחברות</span>
             </button>
           )}
         </div>
