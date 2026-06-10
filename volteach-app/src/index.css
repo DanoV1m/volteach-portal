@@ -60,19 +60,35 @@
 
 /* Custom styling for print support */
 @media print {
-  nav, aside, footer, button, iframe, .vt-toast-container {
+  nav, aside, footer, button, iframe, .vt-toast-container, [class*="print:hidden"] {
     display: none !important;
   }
   body, main {
     background: white !important;
     color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    margin-right: 0 !important;
   }
   #myFormulasList {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 15px !important;
   }
+  #myFormulasList > div {
+    border: 1px solid #cbd5e1 !important;
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+  }
+  #myFormulasList h4 {
+    color: #0f172a !important;
+  }
+  #myFormulasList div.font-mono {
+    color: #047857 !important; /* deep emerald-700 color for formula on print */
+  }
 }
+
 
 /* Hide number input spinners globally to match the design */
 input[type="number"]::-webkit-inner-spin-button,

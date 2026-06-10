@@ -399,7 +399,7 @@ export default function App() {
     <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans antialiased overflow-x-hidden pt-20">
       
       {/* GLOBAL TOAST BANNER */}
-      <div className="fixed bottom-6 left-6 z-55 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
+      <div className="fixed bottom-6 left-6 z-55 flex flex-col gap-3 pointer-events-none max-w-sm w-full vt-toast-container print:hidden">
         {toasts.map(t => (
           <div 
             key={t.id} 
@@ -707,7 +707,18 @@ export default function App() {
             {/* VIEW 5: PRIVATE FORMULAS LIST */}
             {view === 'my-formulas' && (
               <section className="px-6 py-12 md:px-12 max-w-4xl mx-auto space-y-8 animate-fadeIn">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-6">
+                {/* PRINT-ONLY HEADER BRANDING */}
+                <div className="hidden print:flex items-center justify-between border-b-2 border-emerald-500 pb-4 mb-6 direction-rtl text-right">
+                  <div>
+                    <h1 className="text-2xl font-black text-slate-900">VOLTEACH ⚡</h1>
+                    <p className="text-xs text-slate-600 mt-1">פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל — volteach-portal.web.app</p>
+                  </div>
+                  <div className="text-left font-sans">
+                    <p className="text-[10px] text-slate-500">הופק באמצעות מחברת הנוסחאות האישית של VOLTEACH</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-6 print:hidden">
                   <div className="text-right">
                     <h2 className="text-2xl font-black text-white sm:text-3xl">מחברת הנוסחאות האישית שלי</h2>
                     <p className="text-xs text-slate-400 mt-1">נהל, שמור, וייצא את רשימת המשוואות החשמליות שלך.</p>
