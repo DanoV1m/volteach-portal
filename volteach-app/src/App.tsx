@@ -442,11 +442,13 @@ export default function App() {
         {/* Floating Sidebar Toggle Button */}
         <button 
           onClick={() => setIsSidebarCollapsed(p => !p)}
-          className={`fixed top-24 z-50 flex h-10 w-10 items-center justify-center rounded-l-xl bg-slate-900 border-y border-l border-slate-800 text-emerald-400 hover:bg-slate-850 shadow-lg transition-transform duration-350 ${
+          className={`fixed top-24 z-50 flex h-10 w-10 items-center justify-center rounded-l-xl bg-slate-900 border-y border-l border-slate-800 text-emerald-400 hover:bg-slate-850 shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-transform duration-350 ${
             isSidebarCollapsed ? 'translate-x-0' : '-translate-x-80'
           }`}
           style={{ right: 0 }}
           title={isSidebarCollapsed ? "פתח סרגל כלים" : "כווץ סרגל כלים"}
+          aria-label={isSidebarCollapsed ? "פתח סרגל כלים" : "כווץ סרגל כלים"}
+          aria-expanded={!isSidebarCollapsed}
         >
           {isSidebarCollapsed ? <ChevronLeft className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
         </button>
@@ -607,11 +609,12 @@ export default function App() {
           )}
         </aside>
 
-        {/* CONTACT FLOATING ACTION CONTROL */}
+        {/* REPORT BUG FLOATING BUTTON */}
         <button 
           onClick={() => setIsContactOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-teal-500 to-emerald-600 text-xl text-white shadow-xl hover:scale-110 active:scale-95 transition-transform"
-          title="צור קשר / דווח"
+          className="fixed bottom-4 left-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-slate-800/80 text-xl shadow-lg border border-slate-700 hover:bg-slate-700 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all duration-300"
+          title="צור קשר / דווח על תקלה"
+          aria-label="דווח על תקלה או צור קשר"
         >
           ✉️
         </button>
