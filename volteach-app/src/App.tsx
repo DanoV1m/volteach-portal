@@ -14,6 +14,7 @@ import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import SignIn from './components/SignIn';
+import ProfileModal from './components/ProfileModal';
 
 interface ToastMessage {
   id: string;
@@ -110,6 +111,7 @@ export default function App() {
   // Auth State
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Monitor Auth Changes
   useEffect(() => {
@@ -434,6 +436,7 @@ export default function App() {
             addToast('התנתקת בהצלחה מהמערכת', 'info');
           });
         }}
+        onOpenProfile={() => setIsProfileOpen(true)}
       />
 
       {/* APP LAYOUT */}
@@ -814,6 +817,18 @@ export default function App() {
         courseTitle={aiCourse}
         topicName={aiTopic}
       />
+
+      {isProfileOpen && (
+        <ProfileModal 
+          user={user}
+          formulasCount={quickFormulas.length + bookmarks.length}
+          onClose={() => setIsProfileOpen(false)}
+          onLogout={() => {
+            signOut(auth);
+            addToast("התנתקת מהחשבון בהצלחה", "info");
+          }}
+        />
+      )}
 
       {/* SIGN IN MODAL OVERLAY */}
       {isAuthOpen && (

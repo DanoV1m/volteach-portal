@@ -11,6 +11,7 @@ interface MainHeaderProps {
   user: any | null;
   onOpenAuth: () => void;
   onLogout: () => void;
+  onOpenProfile: () => void;
 }
 
 export default function MainHeader({
@@ -22,7 +23,8 @@ export default function MainHeader({
   onShowCacheInfo,
   user,
   onOpenAuth,
-  onLogout
+  onLogout,
+  onOpenProfile
 }: MainHeaderProps) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex h-20 items-center justify-between border-b border-slate-800 bg-slate-950/80 px-6 backdrop-blur-xl md:px-12">
@@ -76,7 +78,11 @@ export default function MainHeader({
                 </span>
               </div>
               
-              <div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm" title={user.email || ''}>
+              <div 
+                onClick={onOpenProfile}
+                className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm cursor-pointer hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]" 
+                title="צפייה בפרופיל האישי"
+              >
                 {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
               </div>
 
