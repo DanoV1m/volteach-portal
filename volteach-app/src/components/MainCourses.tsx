@@ -293,7 +293,23 @@ export default function MainCourses({
                                 <div>
                                   <h4 className="text-xs font-bold text-emerald-400 mb-1.5">{t}</h4>
                                   <div className="text-xs text-slate-300 leading-relaxed max-h-[100px] overflow-y-auto">
-                                    {kb ? kb.explain : 'הסבר תיאורטי בשילוב ה-AI או מהסילבוס.'}
+                                    {kb ? (
+                                      kb.explain
+                                    ) : (
+                                      <div className="flex flex-col items-center justify-center space-y-3 mt-2">
+                                        <p className="text-slate-400 text-center">הסבר טרם סוכם.</p>
+                                        <button 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            onOpenTopic(c.title, t);
+                                          }}
+                                          className="rounded-full bg-indigo-600 hover:bg-indigo-500 py-1.5 px-4 text-white font-bold transition-all flex items-center gap-1.5 shadow-md"
+                                        >
+                                          <span>✨</span>
+                                          <span>ג'נרט הסבר AI</span>
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                                 {kb && kb.formula && (

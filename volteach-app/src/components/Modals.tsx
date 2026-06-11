@@ -240,8 +240,8 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
 
   // Helper function to call the backend endpoint securely
   const queryBackend = async (promptMsg: string) => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) throw new Error("חסר מפתח API של Gemini (VITE_GEMINI_API_KEY). נא להגדיר אותו!");
+    const apiKey = localStorage.getItem('geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error("MISSING_API_KEY");
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -608,8 +608,8 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
 
   // Helper function to call the backend endpoint securely
   const queryBackend = async (promptMsg: string) => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) throw new Error("חסר מפתח API של Gemini (VITE_GEMINI_API_KEY). נא להגדיר אותו!");
+    const apiKey = localStorage.getItem('geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error("MISSING_API_KEY");
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -813,13 +813,44 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
               <p className="text-xs text-slate-400 max-w-md mx-auto">
                 הנושא "<strong>{topicName}</strong>" טרם גומל אופליין. תרצה לג׳נרט לו חומר מפורט הכולל הסבר תיאורטי מושלם ודוגמאות אינטגרליות מבוססות AI כרגע?
               </p>
-              <button
-                onClick={handleGenerateLive}
-                className="rounded-2xl bg-indigo-600 hover:bg-indigo-500 p-3.5 px-6 text-xs font-bold text-white shadow-md transition-all inline-flex items-center gap-2"
-              >
-                <span>✨</span>
-                <span>ג׳נרט חומר ב-Live באמצעות AI</span>
-              </button>
+              
+              {!(localStorage.getItem('geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY) ? (
+                <div className="mt-6 bg-slate-900/80 p-4 rounded-xl border border-rose-500/30 max-w-sm mx-auto text-right">
+                  <h5 className="text-xs font-bold text-rose-400 mb-2">נדרש מפתח גישה (API Key)</h5>
+                  <p className="text-[10px] text-slate-400 mb-3">
+                    כדי לייצר תכנים חינמיים ב-Live, נא להזין מפתח אישי של Google Gemini. 
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-indigo-400 hover:underline mr-1">לחץ כאן ליצירת מפתח בחינם</a>.
+                  </p>
+                  <div className="flex gap-2">
+                    <input 
+                      type="password" 
+                      id="apiKeyInput"
+                      placeholder="AIzaSy..." 
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    />
+                    <button 
+                      onClick={() => {
+                        const val = (document.getElementById('apiKeyInput') as HTMLInputElement).value;
+                        if(val) {
+                          localStorage.setItem('geminiApiKey', val);
+                          window.location.reload();
+                        }
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold"
+                    >
+                      שמור
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={handleGenerateLive}
+                  className="rounded-2xl bg-indigo-600 hover:bg-indigo-500 p-3.5 px-6 text-xs font-bold text-white shadow-md transition-all inline-flex items-center gap-2"
+                >
+                  <span>✨</span>
+                  <span>ג׳נרט חומר ב-Live באמצעות AI</span>
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-6 animate-fadeIn">
@@ -1001,8 +1032,8 @@ export function UploadResourceModal({ isOpen, onClose, institution, courseTitle,
   if (!isOpen) return null;
 
   const queryBackend = async (promptMsg: string) => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) throw new Error("חסר מפתח API של Gemini (VITE_GEMINI_API_KEY). נא להגדיר אותו!");
+    const apiKey = localStorage.getItem('geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error("MISSING_API_KEY");
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
