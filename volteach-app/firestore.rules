@@ -60,16 +60,17 @@ service cloud.firestore {
     match /community_resources/{resourceId} {
       allow read: if true;
       allow create: if isSignedIn() && isValidId(resourceId)
+        && incoming().keys().hasAll(['id', 'title', 'category', 'webViewLink', 'institutionKey', 'courseTitle', 'upvotes', 'upvotedBy', 'contributorName', 'contributorUid', 'createdAt'])
         && incoming().id == resourceId
         && incoming().title is string && incoming().title.size() <= 256
         && incoming().webViewLink is string && incoming().webViewLink.size() <= 1024
         && incoming().contributorUid == request.auth.uid
+        && incoming().upvotes == 0
         && incoming().createdAt == request.time;
       allow update: if isSignedIn() && isValidId(resourceId)
-        && incoming().title == existing().title
-        && incoming().webViewLink == existing().webViewLink
-        && incoming().contributorUid == existing().contributorUid
-        && incoming().createdAt == existing().createdAt;
+        && incoming().diff(existing()).affectedKeys().hasOnly(['upvotes', 'upvotedBy'])
+        && incoming().upvotes is number
+        && incoming().upvotedBy is list;
     }
   }
 }
