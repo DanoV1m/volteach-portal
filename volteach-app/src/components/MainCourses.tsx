@@ -297,8 +297,8 @@ export default function MainCourses({
                                   </div>
                                 </div>
                                 {kb && kb.formula && (
-                                  <div className="mt-2 text-center text-xs text-slate-100 font-mono bg-slate-950/40 py-1 rounded">
-                                    {kb.formula}
+                                  <div className="mt-2 text-center text-xs text-slate-100 font-mono bg-slate-950/40 py-1 rounded direction-ltr">
+                                    {`$$${kb.formula}$$`}
                                   </div>
                                 )}
                               </div>

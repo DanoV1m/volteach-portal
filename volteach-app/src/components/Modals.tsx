@@ -240,17 +240,19 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
 
   // Helper function to call the backend endpoint securely
   const queryBackend = async (promptMsg: string) => {
-    const res = await fetch("/api/gemini", {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error("חסר מפתח API של Gemini (VITE_GEMINI_API_KEY). נא להגדיר אותו!");
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: promptMsg }),
+      body: JSON.stringify({ contents: [{ parts: [{ text: promptMsg }] }] }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
     }
     const data = await res.json();
-    return data.text;
+    return data.candidates[0].content.parts[0].text;
   };
 
   const loadLocalQuestions = () => {
@@ -606,17 +608,19 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
 
   // Helper function to call the backend endpoint securely
   const queryBackend = async (promptMsg: string) => {
-    const res = await fetch("/api/gemini", {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error("חסר מפתח API של Gemini (VITE_GEMINI_API_KEY). נא להגדיר אותו!");
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: promptMsg }),
+      body: JSON.stringify({ contents: [{ parts: [{ text: promptMsg }] }] }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
     }
     const data = await res.json();
-    return data.text;
+    return data.candidates[0].content.parts[0].text;
   };
 
   const handleGenerateLive = async () => {
@@ -997,17 +1001,19 @@ export function UploadResourceModal({ isOpen, onClose, institution, courseTitle,
   if (!isOpen) return null;
 
   const queryBackend = async (promptMsg: string) => {
-    const res = await fetch("/api/gemini", {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error("חסר מפתח API של Gemini (VITE_GEMINI_API_KEY). נא להגדיר אותו!");
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: promptMsg }),
+      body: JSON.stringify({ contents: [{ parts: [{ text: promptMsg }] }] }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
     }
     const data = await res.json();
-    return data.text;
+    return data.candidates[0].content.parts[0].text;
   };
 
   const handleManualAnalyze = async (e: React.FormEvent) => {

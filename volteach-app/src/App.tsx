@@ -31,7 +31,7 @@ export default function App() {
   const [selectedTrack, setSelectedTrack] = useState<'regular' | 'spread'>('regular');
 
   // Sidebar Layout State
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(window.innerWidth < 1024);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
   // Bookmarks State
