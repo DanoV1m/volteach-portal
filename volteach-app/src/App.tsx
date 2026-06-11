@@ -187,7 +187,7 @@ export default function App() {
         }
       }
     }, 100);
-  }, [view, openAccordion, bookmarks]);
+  }, [view, openAccordion, bookmarks, isSidebarCollapsed, quickFormulas]);
 
   const addToast = (msg: string, type: 'info' | 'error' | 'success') => {
     const id = Date.now().toString() + Math.random().toString();
