@@ -439,20 +439,24 @@ export default function App() {
       {/* APP LAYOUT */}
       <div className="relative z-10 flex min-h-[calc(100vh-80px)]">
         
+        {/* Floating Sidebar Toggle Button */}
+        <button 
+          onClick={() => setIsSidebarCollapsed(p => !p)}
+          className={`fixed top-24 z-50 flex h-10 w-10 items-center justify-center rounded-l-xl bg-slate-900 border-y border-l border-slate-800 text-emerald-400 hover:bg-slate-850 shadow-lg transition-transform duration-350 ${
+            isSidebarCollapsed ? 'translate-x-0' : '-translate-x-80'
+          }`}
+          style={{ right: 0 }}
+          title={isSidebarCollapsed ? "פתח סרגל כלים" : "כווץ סרגל כלים"}
+        >
+          {isSidebarCollapsed ? <ChevronLeft className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
+        </button>
+
         {/* SIDEBAR FOR MATHEMATICAL FORMULAS & CALCULATORS */}
         <aside 
-          className={`fixed right-0 top-20 bottom-0 z-40 bg-slate-950 border-l border-slate-900/80 transition-all duration-350 overflow-y-auto ${
-            isSidebarCollapsed ? 'w-12 md:w-14' : 'w-full sm:w-80 shadow-2xl'
+          className={`fixed right-0 top-20 bottom-0 z-40 bg-slate-950 border-l border-slate-900/80 transition-transform duration-350 overflow-y-auto w-80 shadow-2xl ${
+            isSidebarCollapsed ? 'translate-x-full' : 'translate-x-0'
           }`}
         >
-          {/* Collapse toggle */}
-          <button 
-            onClick={() => setIsSidebarCollapsed(p => !p)}
-            className="absolute left-1.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 border border-slate-800 text-emerald-400 hover:bg-slate-850"
-            title={isSidebarCollapsed ? "פתח סרגל כלים" : "כווץ סרגל כלים"}
-          >
-            {isSidebarCollapsed ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-          </button>
 
           {!isSidebarCollapsed && (
             <div className="p-4 space-y-6 animate-fadeIn pb-16">
@@ -615,7 +619,7 @@ export default function App() {
         {/* MAIN BODY AREA */}
         <main 
           className={`flex-1 min-h-[calc(100vh-80px)] transition-all duration-350 ${
-            isSidebarCollapsed ? 'mr-12 md:mr-14' : 'mr-12 md:mr-80'
+            isSidebarCollapsed ? 'mr-0' : 'mr-0 md:mr-80'
           }`}
         >
           {/* VIEW ROUTING ROUTER */}
