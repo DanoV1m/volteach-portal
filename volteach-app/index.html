@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VOLTEACH — פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל</title>
+    <meta name="description" content="VOLTEACH הוא הפורטל המתקדם והמקיף ביותר לסטודנטים בהנדסת חשמל ואלקטרוניקה. סימולטור בחינות חכם, סיכומים, נוסחאות חכמות, קלפי שינון ומרצה AI שילווה אותך עד התואר." />
+    <meta name="keywords" content="הנדסת חשמל, לימודי הנדסה, סיכומי קורסים, מבחנים הנדסת חשמל, פורטל סטודנטים, בינה מלאכותית בלימודים, Volteach" />
+    <meta property="og:title" content="VOLTEACH — פורטל הנדסת חשמל" />
+    <meta property="og:description" content="הצטרף לקהילת הסטודנטים של VOLTEACH. סיכומים, מבחנים, נוסחאות ומרצה AI פרטי שמכין אותך למבחן." />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0f172a" />
+    <!-- Google Fonts for modern Hebrew and English typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&family=Heebo:wght@300;400;600;700;800&family=Rubik:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+    <!-- Suppress benign WebSocket / Vite connection errors -->
+    <script>
+      window.addEventListener('unhandledrejection', function(event) {
+        var reason = event.reason;
+        if (reason) {
+          var msg = typeof reason === 'string' ? reason : (reason.message || '');
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }
+      }, true);
+      window.addEventListener('error', function(event) {
+        var msg = event.message || '';
+        if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1 || msg.indexOf('[vite]') !== -1) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }, true);
+    </script>
+    <!-- KaTeX JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+    <!-- Google APIs & Identity Services for Picker & OAuth Drive integration -->
+    <script async defer src="https://apis.google.com/js/api.js"></script>
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
+  </head>
+  <body class="bg-[#0f172a] text-slate-100 min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

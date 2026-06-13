@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global safety net catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Standard high-security global helpers
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+    
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    function incoming() { 
+      return request.resource.data; 
+    }
+    
+    function existing() { 
+      return resource.data; 
+    }
+    
+    function isOwner(userId) { 
+      return isSignedIn() && request.auth.uid == userId; 
+    }
+
+    // 2. User Profiles - Master records containing info of registered student profiles
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow create: if isSignedIn() && isOwner(userId) && isValidId(userId)
+        && incoming().uid == userId
+        && incoming().email is string && incoming().email.size() <= 256
+        && incoming().createdAt == request.time;
+      allow update: if isOwner(userId) && isValidId(userId)
+        && incoming().uid == userId
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && !incoming().diff(existing()).affectedKeys().hasAny(['xp', 'level']);
+    }
+
+    // 3. User saved formulas subcollection
+    match /users/{userId}/formulas/{formulaId} {
+      allow list: if isOwner(userId);
+      allow get, delete: if isOwner(userId) && isValidId(userId) && isValidId(formulaId);
+      allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(formulaId)
+        && incoming().userId == userId
+        && incoming().id is string && incoming().id.size() <= 128
+        && incoming().title is string && incoming().title.size() <= 256
+        && incoming().latex is string && incoming().latex.size() <= 1024
+        && incoming().createdAt == request.time;
+      allow update: if isOwner(userId) && isValidId(userId) && isValidId(formulaId)
+        && incoming().userId == userId
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt;
+    }
+
+    // 4. Community Shared Resources
+    match /community_resources/{resourceId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(resourceId)
+        && incoming().keys().hasAll(['id', 'title', 'category', 'webViewLink', 'institutionKey', 'courseTitle', 'upvotes', 'upvotedBy', 'contributorName', 'contributorUid', 'createdAt'])
+        && incoming().id == resourceId
+        && incoming().title is string && incoming().title.size() <= 256
+        && incoming().webViewLink is string && incoming().webViewLink.size() <= 1024
+        && incoming().contributorUid == request.auth.uid
+        && incoming().upvotes == 0
+        && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isValidId(resourceId)
+        && incoming().diff(existing()).affectedKeys().hasOnly(['upvotes', 'upvotedBy'])
+        && incoming().upvotes == existing().upvotes + 1
+        && incoming().upvotedBy.hasAll(existing().upvotedBy)
+        && incoming().upvotedBy.size() == existing().upvotedBy.size() + 1
+        && request.auth.uid in incoming().upvotedBy;
+    }
+  }
+}

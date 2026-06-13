@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile containing core identity and timestamps",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique Firebase Authentication user ID"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the student"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Full name or nickname of the student"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the user record creation"
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "FormulaBookmark": {
+      "title": "FormulaBookmark",
+      "description": "An electrical engineering equation saved by the student in their personalized notebook",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique ID of the math equation"
+        },
+        "title": {
+          "type": "string",
+          "description": "Name or title of the formula (e.g. Ohm's Law)"
+        },
+        "latex": {
+          "type": "string",
+          "description": "The raw LaTeX string of the mathematical equation"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The student UID who bookmarked this formula"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of when it was saved"
+        }
+      },
+      "required": ["id", "title", "latex", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile mapping containing student academic settings"
+    },
+    "/users/{userId}/formulas/{formulaId}": {
+      "schema": "FormulaBookmark",
+      "description": "Personalized math sheets containing student formulas synced from local storage"
+    }
+  }
+}

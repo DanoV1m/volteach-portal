@@ -1,0 +1,42 @@
+name: Automatic Firestore-to-CSV Database Sync
+
+on:
+  schedule:
+    # Runs every 12 hours
+    - cron: '0 */12 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: volteach-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: volteach-app
+
+      - name: Run Database Sync
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VOLTEACH_PORTAL }}
+        run: npm run db:sync
+        working-directory: volteach-app
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "Volteach DB Sync Bot"
+          git config --global user.email "volteach-db-bot@users.noreply.github.com"
+          git add admin_database/*.csv
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-sync database CSV registries [skip ci]" && git push)

@@ -1,0 +1,149 @@
+# <img src="./volteach-app/assets/logo.png" width="40" align="right" /> VOLTEACH - פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Badge" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TS Badge" />
+  <img src="https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white" alt="Firebase Badge" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD627" alt="Vite Badge" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind Badge" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="MIT License Badge" />
+</p>
+
+[English Version Below]
+
+**VOLTEACH** הוא פורטל למידה מתקדם, רספונסיבי ועשיר בכלים, שפותח במיוחד עבור סטודנטים להנדסת חשמל ואלקטרוניקה בישראל. הפורטל מרכז במקום אחד סילבוסים אקדמיים, כלי עזר הנדסיים, מחשבונים ייעודיים, דפי נוסחאות אינטראקטיביים, סימולטורים של מבחנים וחומרי לימוד ישירים מהדרייב.
+
+👉 **לאתר החי (Live Demo):** [https://volteach-portal.web.app](https://volteach-portal.web.app)
+
+---
+
+### 🖥️ תצוגה מקדימה של הממשק (Showcase)
+
+<p align="center">
+  <img src="./volteach-app/assets/screenshot.png" width="90%" alt="VOLTEACH UI Screenshot" />
+</p>
+
+---
+
+## 📖 אודות יוצר האתר
+הפרויקט פותח ונבנה מתוך תשוקה רבה על ידי **מהנדס חשמל בתחילת דרכו אקדמית ומקצועית**. המטרה המרכזית של VOLTEACH היא להנגיש ולהקל על עומס הלמידה של סטודנטים להנדסה בארץ, לרכז עבורם את הכלים הנדרשים ללמידה יומיומית, ולתמוך בהצלחתם האקדמית בצורה חכמה ומודרנית.
+
+---
+
+## 🚀 תכונות עיקריות (Features)
+
+* 📅 **סנכרון תוכנית הלימודים (סילבוסים)**: תוכניות לימוד מותאמות אישית (שנים א' עד ד'/ה') עבור מוסדות הלימוד המובילים בארץ: הטכניון, אוניברסיטת תל אביב, אוניברסיטת בן-גוריון, בר-אילן, העברית, אריאל, מכללת אפקה, HIT (חולון), סמי שמעון, בראודה, עזריאלי ירושלים, כנרת ומכון לב.
+* 🎚️ **בורר מסלולים דינמי לרופין**: אפשרות מעבר בלחיצת כפתור בין מסלול רגיל (4 שנים) למסלול מורחב בפריסה חמש-שנתית.
+* 🔌 **מחשבונים הנדסיים בסרגל הכלים (ממוינים לפי קטגוריות)**:
+  * **מעגלים והתקנים**: חוק אוהם (חישוב V, I, R, P), חישוב התנגדות שקולה במקביל (Req), מחלק מתח (Voltage Divider), וקבוע זמן RC.
+  * **אותות ותקשורת**: ממיר יחסי dB (הספק ומתח) והמרת תדר ↔ זמן מחזור.
+  * **כלים מתמטיים וספרתיים**: המרת קידומות (מגה, קילו, מיקרו וכד') והמרת בסיסי מספרים (DEC, BIN, HEX, OCT).
+* 📖 **מחברת נוסחאות אישית ומסונכרנת**: שמירה, ניהול, הדפסה (ל-PDF) ושיתוף של נוסחאות חשמליות. המערכת מסונכרנת לענן (Firebase Firestore) למשתמשים מחוברים, או נשמרת מקומית (LocalStorage) לאורחים.
+* ➕ **הוספה ומחיקה של נוסחאות מהירות**: אפשרות להוסיף נוסחאות מהירות מותאמות אישית ישירות לסרגל הכלים באמצעות כתיבת קוד LaTeX.
+* 📐 **זהויות טריגונומטריות**: דף זהויות טריגונומטריות מובנה לגישה מהירה בזמן פתרון מטלות.
+* ⏱️ **כרטיסיות שינון למרתון וסימולציות מבחנים**: כרטיסיות שינון אינטראקטיביות להבנת מושגים אקדמיים לפני בחינה.
+* 📁 **אינטגרציה מלאה ל-Google Drive**: תצוגה מובנית של תיקיות הדרייב המוסדיות המכילות מצגות, תרגולים ומבחני עבר.
+
+---
+
+## 🛠️ טכנולוגיות (Tech Stack)
+
+* **Frontend**: React, Vite, TypeScript, Tailwind CSS
+* **Aesthetics & UI**: Vanilla CSS, Glassmorphic Design, Custom Sleek Scrollbars
+* **Database & Auth**: Firebase Auth (Google, GitHub, and Email/Password), Cloud Firestore (syncing data)
+* **Math Rendering**: KaTeX (LaTeX integration)
+
+---
+
+# <img src="./volteach-app/assets/logo.png" width="40" align="right" /> VOLTEACH - Electrical Engineering Student Portal
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Badge" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TS Badge" />
+  <img src="https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white" alt="Firebase Badge" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD627" alt="Vite Badge" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind Badge" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="MIT License Badge" />
+</p>
+
+VOLTEACH is a modern, responsive, and feature-rich learning portal designed specifically for Electrical and Electronics Engineering students in Israel. It consolidates academic syllabi, engineering tools, calculators, customizable formula sheets, exam simulators, and educational materials into a single premium workspace.
+
+👉 **Live Demo:** [https://volteach-portal.web.app](https://volteach-portal.web.app)
+
+---
+
+### 🖥️ Interface Showcase
+
+<p align="center">
+  <img src="./volteach-app/assets/screenshot.png" width="90%" alt="VOLTEACH UI Screenshot" />
+</p>
+
+---
+
+## 🚀 Key Features
+
+* 📅 **Dynamic Syllabus Integration**: Tailored course schedules and curriculums for multiple Israeli academic institutions (Technion, Ben-Gurion University, Ruppin, HIT, Tel Aviv University, Afeka, Bar-Ilan, Ariel, SCE, Azrieli, Kinneret, and Lev Academic Center).
+* 🎚️ **Ruppin Track Selector**: Dynamic toggle between the Regular 4-Year Day Track and the Extended 5-Year Spread Track.
+* 🔌 **Collapsible Engineering Calculators**:
+  * **Ohm's Law**: Solve for Voltage, Current, Resistance, and Power.
+  * **Parallel Resistors (Req)**: Calculates equivalent resistance of parallel resistors.
+  * **Voltage Divider**: Instantly calculates output voltages ($V_{out}$).
+  * **RC Time Constant**: Find $\tau$ and cutoff frequency $f_c$.
+  * **dB Converter & Unit Prefixes**: Seamless engineering unit conversions.
+  * **Frequency ↔ Period**: Convert frequencies and cycle times.
+  * **Base Converter**: Convert between decimal, binary, hex, and octal.
+* 📖 **Customizable Formula Sheets**: Save, manage, edit, and print formula collections or export them directly to PDF. Includes a dynamic local/cloud sync (using Firebase Firestore).
+* 📐 **Trigonometric Identities Sheet**: Trigonometric identities built-in for quick math assistance.
+* ⏱️ **Exam Simulator & Marathon Flashcards**: Interactive flashcards powered by local enrichment data for study reinforcement.
+* 📁 **Google Drive Integration**: Directly embedded study folders from Google Drive featuring past exams and lecture slides.
+* 🔒 **Secure Authentication**: Supports Email/Password sign-ins, Google fast login, and GitHub developer login.
+
+---
+
+## 🛠️ Technology Stack
+
+* **Frontend**: React, Vite, TypeScript, Tailwind CSS
+* **Styling**: Modern Vanilla CSS, Glassmorphism, Custom Webkit Scrollbars, Dynamic Hover States
+* **Icons & Math**: Lucide React, KaTeX (LaTeX math rendering)
+* **Backend & Database**: Firebase Authentication, Cloud Firestore (database synchronization)
+* **Hosting**: Firebase Hosting
+
+---
+
+## ⚙️ Running Locally
+
+### Prerequisites
+* **Node.js** (v18 or higher recommended)
+* **npm**
+
+### Installation Steps
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/DanoV1m/volteach-portal.git
+   cd volteach-portal/volteach-app
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create your `.env` file from the example:
+   ```bash
+   cp .env.example .env
+   ```
+   *Fill in your Firebase credentials in `.env` if you want backend syncing enabled.*
+4. Start the local development server:
+   ```bash
+   npm run dev
+   ```
+5. Open your browser at `http://localhost:3000` to view the app!
+
+---
+
+## 🧑‍💻 Creator
+
+Developed with passion by an aspiring **Electrical Engineer** at the beginning of their professional journey. VOLTEACH was created to simplify the engineering academic workload and support peer student success.
+
+---
+
+## 📄 License
+This project is licensed under the MIT License.
