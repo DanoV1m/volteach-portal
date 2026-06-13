@@ -1,15 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { ChevronRight, ChevronLeft, Plus, Check, RefreshCw, Share2, Printer, Trash, X, Cloud, Cpu, Compass, Activity, Landmark, GraduationCap, BookOpen, Zap } from 'lucide-react';
 import { institutions } from './data/institutions';
 import { coursesData } from './data/courses';
 import { FormulaBookmark } from './types';
-import Calculators from './components/Calculators';
 import MainHeader from './components/MainHeader';
-import MainHome from './components/MainHome';
-import MainInstitutions from './components/MainInstitutions';
-import MainYears from './components/MainYears';
-import MainCourses from './components/MainCourses';
-import { ContactModal, EnrichmentModal, ExamModal, AiModal } from './components/Modals';
 import { sanitizeFormulaInput } from './utils/security';
 import { QuickFormulaInput } from './components/QuickFormulaInput';
 import { LegalModal } from './components/LegalModal';
@@ -17,8 +11,37 @@ import { CookieBanner } from './components/CookieBanner';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
-import SignIn from './components/SignIn';
-import ProfileModal from './components/ProfileModal';
+
+// Lazily loaded views — each becomes its own chunk
+const MainHome = lazy(() => import('./components/MainHome'));
+const MainInstitutions = lazy(() => import('./components/MainInstitutions'));
+const MainYears = lazy(() => import('./components/MainYears'));
+const MainCourses = lazy(() => import('./components/MainCourses'));
+
+// Lazily loaded sidebar — only rendered when sidebar is open
+const Calculators = lazy(() => import('./components/Calculators'));
+
+// Lazily loaded modals — named exports re-wrapped as default for React.lazy
+const ContactModal = lazy(() =>
+  import('./components/Modals').then(m => ({ default: m.ContactModal }))
+);
+const EnrichmentModal = lazy(() =>
+  import('./components/Modals').then(m => ({ default: m.EnrichmentModal }))
+);
+const ExamModal = lazy(() =>
+  import('./components/Modals').then(m => ({ default: m.ExamModal }))
+);
+const AiModal = lazy(() =>
+  import('./components/Modals').then(m => ({ default: m.AiModal }))
+);
+const SignIn = lazy(() => import('./components/SignIn'));
+const ProfileModal = lazy(() => import('./components/ProfileModal'));
+
+const ViewFallback = () => (
+  <div className="flex items-center justify-center min-h-[40vh]">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-400" />
+  </div>
+);
 
 interface ToastMessage {
   id: string;
@@ -599,7 +622,9 @@ export default function App() {
               {/* Calculations Block */}
               <div className="border-t border-slate-900 pt-6">
                 <div className="mb-4 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">מחשבונים הנדסיים מובנים:</div>
-                <Calculators />
+                <Suspense fallback={<div className="h-24 flex items-center justify-center"><div className="h-6 w-6 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-400" /></div>}>
+                  <Calculators />
+                </Suspense>
               </div>
             </div>
           )}
@@ -625,86 +650,94 @@ export default function App() {
           <div className="relative">
             {/* VIEW 1: HOME */}
             {view === 'home' && (
-              <MainHome
-                onSelectType={type => {
-                  setSelectedType(type);
-                  setView('institutions');
-                }}
-                onSelectSearchCourse={courseTitle => {
-                  setEnrichmentCourse(courseTitle);
-                  setIsEnrichmentOpen(true);
-                }}
-                onSelectSearchTopic={(course, topic) => {
-                  setAiCourse(course);
-                  setAiTopic(topic);
-                  setIsAiOpen(true);
-                }}
-              />
+              <Suspense fallback={<ViewFallback />}>
+                <MainHome
+                  onSelectType={type => {
+                    setSelectedType(type);
+                    setView('institutions');
+                  }}
+                  onSelectSearchCourse={courseTitle => {
+                    setEnrichmentCourse(courseTitle);
+                    setIsEnrichmentOpen(true);
+                  }}
+                  onSelectSearchTopic={(course, topic) => {
+                    setAiCourse(course);
+                    setAiTopic(topic);
+                    setIsAiOpen(true);
+                  }}
+                />
+              </Suspense>
             )}
 
             {/* VIEW 2: INSTITUTIONS LIST */}
             {view === 'institutions' && selectedType && (
-              <MainInstitutions
-                type={selectedType}
-                institutionsList={institutions}
-                onBack={() => {
-                  setSelectedType(null);
-                  setView('home');
-                }}
-                onSelectInstitution={instKey => {
-                  setSelectedInstitutionKey(instKey);
-                  setView('years');
-                }}
-              />
+              <Suspense fallback={<ViewFallback />}>
+                <MainInstitutions
+                  type={selectedType}
+                  institutionsList={institutions}
+                  onBack={() => {
+                    setSelectedType(null);
+                    setView('home');
+                  }}
+                  onSelectInstitution={instKey => {
+                    setSelectedInstitutionKey(instKey);
+                    setView('years');
+                  }}
+                />
+              </Suspense>
             )}
 
-             {/* VIEW 3: YEARS & SEMESTERS LIST */}
+            {/* VIEW 3: YEARS & SEMESTERS LIST */}
             {view === 'years' && selectedInstitution && (
-              <MainYears
-                institution={selectedInstitution}
-                selectedTrack={selectedTrack}
-                onTrackChange={(track) => setSelectedTrack(track)}
-                onBack={() => {
-                  setSelectedInstitutionKey(null);
-                  setSelectedTrack('regular');
-                  setView('institutions');
-                }}
-                onSelectYearSemester={(year, sem) => {
-                  setSelectedYear(year);
-                  setSelectedSemester(sem);
-                  setView('courses');
-                }}
-                cacheBadgeInfo={{ ageText: "מעודכן ברשת חברתית", isFresh: true }}
-                onRefreshCache={() => addToast('תכני הלימוד רעננו מהרכיב המרכזי.', 'success')}
-              />
+              <Suspense fallback={<ViewFallback />}>
+                <MainYears
+                  institution={selectedInstitution}
+                  selectedTrack={selectedTrack}
+                  onTrackChange={(track) => setSelectedTrack(track)}
+                  onBack={() => {
+                    setSelectedInstitutionKey(null);
+                    setSelectedTrack('regular');
+                    setView('institutions');
+                  }}
+                  onSelectYearSemester={(year, sem) => {
+                    setSelectedYear(year);
+                    setSelectedSemester(sem);
+                    setView('courses');
+                  }}
+                  cacheBadgeInfo={{ ageText: "מעודכן ברשת חברתית", isFresh: true }}
+                  onRefreshCache={() => addToast('תכני הלימוד רעננו מהרכיב המרכזי.', 'success')}
+                />
+              </Suspense>
             )}
 
             {/* VIEW 4: COURSES SEMESTER DASHBOARD */}
             {view === 'courses' && selectedInstitution && selectedYear && selectedSemester && (
-              <MainCourses
-                institution={selectedInstitution}
-                year={selectedYear}
-                semester={selectedSemester}
-                coursesList={(coursesData[selectedInstitution.key === 'ruppin' && selectedTrack === 'spread' ? 'ruppin_spread' : selectedInstitution.key]?.[selectedYear]?.[selectedSemester]) || []}
-                onBack={() => {
-                  setSelectedYear(null);
-                  setSelectedSemester(null);
-                  setView('years');
-                }}
-                onOpenEnrichment={courseTitle => {
-                  setEnrichmentCourse(courseTitle);
-                  setIsEnrichmentOpen(true);
-                }}
-                onOpenExam={courseTitle => {
-                  setExamCourse(courseTitle);
-                  setIsExamOpen(true);
-                }}
-                onOpenTopic={(courseTitle, topicName) => {
-                  setAiCourse(courseTitle);
-                  setAiTopic(topicName);
-                  setIsAiOpen(true);
-                }}
-              />
+              <Suspense fallback={<ViewFallback />}>
+                <MainCourses
+                  institution={selectedInstitution}
+                  year={selectedYear}
+                  semester={selectedSemester}
+                  coursesList={(coursesData[selectedInstitution.key === 'ruppin' && selectedTrack === 'spread' ? 'ruppin_spread' : selectedInstitution.key]?.[selectedYear]?.[selectedSemester]) || []}
+                  onBack={() => {
+                    setSelectedYear(null);
+                    setSelectedSemester(null);
+                    setView('years');
+                  }}
+                  onOpenEnrichment={courseTitle => {
+                    setEnrichmentCourse(courseTitle);
+                    setIsEnrichmentOpen(true);
+                  }}
+                  onOpenExam={courseTitle => {
+                    setExamCourse(courseTitle);
+                    setIsExamOpen(true);
+                  }}
+                  onOpenTopic={(courseTitle, topicName) => {
+                    setAiCourse(courseTitle);
+                    setAiTopic(topicName);
+                    setIsAiOpen(true);
+                  }}
+                />
+              </Suspense>
             )}
 
             {/* VIEW 5: PRIVATE FORMULAS LIST */}
@@ -844,33 +877,41 @@ export default function App() {
       </div>
 
       {/* OVERLAY MODAL LISTINGS */}
-      <ContactModal 
-        isOpen={isContactOpen}
-        onClose={() => setIsContactOpen(false)}
-        institutionsList={institutions}
-        initialInstKey={selectedInstitutionKey}
-      />
+      <Suspense fallback={null}>
+        <ContactModal
+          isOpen={isContactOpen}
+          onClose={() => setIsContactOpen(false)}
+          institutionsList={institutions}
+          initialInstKey={selectedInstitutionKey}
+        />
+      </Suspense>
 
-      <EnrichmentModal 
-        isOpen={isEnrichmentOpen}
-        onClose={() => setIsEnrichmentOpen(false)}
-        courseTitle={enrichmentCourse}
-      />
+      <Suspense fallback={null}>
+        <EnrichmentModal
+          isOpen={isEnrichmentOpen}
+          onClose={() => setIsEnrichmentOpen(false)}
+          courseTitle={enrichmentCourse}
+        />
+      </Suspense>
 
-      <ExamModal 
-        isOpen={isExamOpen}
-        onClose={() => setIsExamOpen(false)}
-        courseTitle={examCourse}
-      />
+      <Suspense fallback={null}>
+        <ExamModal
+          isOpen={isExamOpen}
+          onClose={() => setIsExamOpen(false)}
+          courseTitle={examCourse}
+        />
+      </Suspense>
 
-      <AiModal 
-        isOpen={isAiOpen}
-        onClose={() => setIsAiOpen(false)}
-        courseTitle={aiCourse}
-        topicName={aiTopic}
-      />
+      <Suspense fallback={null}>
+        <AiModal
+          isOpen={isAiOpen}
+          onClose={() => setIsAiOpen(false)}
+          courseTitle={aiCourse}
+          topicName={aiTopic}
+        />
+      </Suspense>
 
-      <LegalModal 
+      <LegalModal
         isOpen={isLegalOpen}
         onClose={() => setIsLegalOpen(false)}
         type={legalType}
@@ -879,23 +920,25 @@ export default function App() {
       <CookieBanner />
 
       {isProfileOpen && (
-        <ProfileModal 
-          user={user}
-          formulasCount={quickFormulas.length + bookmarks.length}
-          onClose={() => setIsProfileOpen(false)}
-          onLogout={() => {
-            signOut(auth);
-            addToast("התנתקת מהחשבון בהצלחה", "info");
-          }}
-          onViewFormulas={() => {
-            setIsProfileOpen(false);
-            setView('my-formulas');
-            setSelectedType(null);
-            setSelectedInstitutionKey(null);
-            setSelectedYear(null);
-            setSelectedSemester(null);
-          }}
-        />
+        <Suspense fallback={null}>
+          <ProfileModal
+            user={user}
+            formulasCount={quickFormulas.length + bookmarks.length}
+            onClose={() => setIsProfileOpen(false)}
+            onLogout={() => {
+              signOut(auth);
+              addToast("התנתקת מהחשבון בהצלחה", "info");
+            }}
+            onViewFormulas={() => {
+              setIsProfileOpen(false);
+              setView('my-formulas');
+              setSelectedType(null);
+              setSelectedInstitutionKey(null);
+              setSelectedYear(null);
+              setSelectedSemester(null);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* SIGN IN MODAL OVERLAY */}
@@ -909,12 +952,14 @@ export default function App() {
             >
               <X className="h-4 w-4" />
             </button>
-            <SignIn 
-              onSuccess={(msg) => {
-                setIsAuthOpen(false);
-                addToast(msg, "success");
-              }}
-            />
+            <Suspense fallback={null}>
+              <SignIn
+                onSuccess={(msg) => {
+                  setIsAuthOpen(false);
+                  addToast(msg, "success");
+                }}
+              />
+            </Suspense>
           </div>
         </div>
       )}
