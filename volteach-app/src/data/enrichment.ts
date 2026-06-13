@@ -85,6 +85,30 @@ export const courseEnrichment: Record<string, CourseEnrichment> = {
 };
 
 export const topicKnowledge: Record<string, TopicKnowledge> = {
+  "הגדרת פרויקט": {
+    course: "פרויקט גמר שנתי",
+    explain: "הגדרת פרויקט היא תהליך שיטתי לתכנון, ארגון, וביצוע משימה ייחודית, המוגבלת בזמן ובמשאבים. היא כוללת הגדרת מטרות, זיהוי משאבים, תכנון פעילויות, וניהול סיכונים.",
+    formula: "היקף הפרויקט = \\frac{משאבים}{זמן} + סיכונים",
+    example: "דוגמה לפרויקט: פיתוח אפליקציה חדשה לאיתור מיקום. הפרויקט כולל תכנון, עיצוב, פיתוח, בדיקות, ושקילה.",
+    quizQuestion: "מהו המרכיב החשוב ביותר בהגדרת פרויקט?",
+    quizAnswer: "המרכיב החשוב ביותר הוא הגדרת המטרות הברורות והמדידות."
+  },
+  "HTTP": {
+    course: "פרוטוקולי תקשורת",
+    explain: "HTTP (Hypertext Transfer Protocol) הוא פרוטוקול תקשורת המשמש להעברת נתונים ברשת האינטרנט. הוא מאפשר ללקוחות, כגון דפדפנים, לשלוח בקשות לשרתים ולקבל תגובות.",
+    formula: "הפרוטוקול HTTP משתמש ב\\frac{מבנה בקשה-תגובה}{לקוח-שרת} כדי להעביר נתונים. הבקשות מורכבות משורת בקשה, שורות כותרות וגוף הבקשה.",
+    example: "דוגמה לבקשת HTTP: GET /path/to/resource HTTP/1.1\\nHost: www.example.com\\nAccept: text/html",
+    quizQuestion: "מהו הפרוטוקול המשמש להעברת נתונים ברשת האינטרנט?",
+    quizAnswer: "HTTP"
+  },
+  "Ethernet": {
+    course: "פרוטוקולי תקשורת",
+    explain: "Ethernet הוא פרוטוקול תקשורת המשמש לחיבור מחשבים והתקנים אחרים ברשת מקומית (LAN). הוא מבוסס על טכנולוגיית החיבור הנקודתי (Point-to-Point) ומאפשר תקשורת בין התקנים המחוברים אליו.",
+    formula: "הנוסחה לחישוב קצב התקשורת ב-Ethernet היא: \\frac{נפח הנתונים}{זמן התקשורת}. לדוגמה, אם נפח הנתונים הוא 1000 בייט וזמן התקשורת הוא 1 שנייה, אז קצב התקשורת הוא: \\frac{1000}{1} = 1000 בייט/שנייה.",
+    example: "דוגמה לשימוש ב-Ethernet היא רשת המחשבים בבית ספר. ברשת זו, כל המחשבים מחוברים לשרת מרכזי, והשרת מחובר לאינטרנט. כך, כל המחשבים ברשת יכולים לתקשר זה עם זה ולגשת לאינטרנט.",
+    quizQuestion: "מהו הפרוטוקול המשמש לחיבור מחשבים והתקנים אחרים ברשת מקומית (LAN)?",
+    quizAnswer: "Ethernet"
+  },
   "TCP/IP": {
     course: "פרוטוקולי תקשורת",
     explain: "TCP/IP הוא קבוצה של פרוטוקולים המשמשים לתקשורת ברשתות מחשבים, והוא הבסיס לאינטרנט. הוא כולל ארבע שכבות: שכבת היישום, שכבת התעבורה, שכבת הרשת ושכבת הקו. TCP/IP מאפשר תקשורת בין מחשבים שונים ומערכות הפעלה, והוא משמש כפרוטוקול תקשורת סטנדרטי.",
@@ -668,14 +692,6 @@ export const topicKnowledge: Record<string, TopicKnowledge> = {
     example: undefined,
     quizQuestion: "Which law explains why a passenger lurches forward when a bus suddenly stops?",
     quizAnswer: "חוק האינ-HT (овороми) - החוק הראשון של ניוטון, karena щоб wurde оперативноNotification"
-  },
-  "קינמטיקה ודינמיקה": {
-    course: "Physics 1",
-    explain: "קינמטיקה ודינמיקהemiahBrancofocus עקרונות החשEssai keinicorporiale وزنةຂ້າstudy מודעות תנועות פיזICKLEK ת'taמוצג وَ otoñoparte עושים, ודינמיקה בארגל سביבים ע wiederumкомпонנטי, כפי שמתאר automatique완전 트 Examples-आधारparteوذج (\\(\\vec{F}\\) = \\(\\vec{m}\\times \\\\vec{a}\\)), וinatofologia ام Ritter первогозакона ( urged A했다고титьeloid weapon Cartistic गलती \\(\\sum\\vec{F}\\=0\\)).",
-    formula: {"law_of_dynamics":"\\\\\\sum\\vec{F}\\=\\vec{m}\\times \\\\vec{a}","kinematic_equation_v":"\\\\vec{v} = \\\\vec{u} + \\\\vec{a}t","kinematic_equation_s":"\\\\vec{s} = \\\\vec{u}t + \\frac{1}{2}\\vec{a}t^2"},
-    example: "A projectile is launched with an initial velocity of \\(v_0 = 20\\,\\text{m/s}\\) upwards. Calculate its maximum height. Using \\(\\\\(v^2 = u^2 + 2as\\\\) with \\(v = 0\\,\\vec{a} = -9.8\\,\\text{m/s}^2\\,\\:\\)",
-    quizQuestion: "Which kinematic equation applies when acceleration is zero?\n1. \\(s = ut\\)\n2. \\(v = u + at\\%\\)\n3. \\(s = ut + \\frac{1}{2}at^2\\%\\)",
-    quizAnswer: "1. \\(s = ut\\%\\)"
   },
   "מערכות משוואות ומרחבים וקטוריים": {
     course: "אלגברה ליניארית",

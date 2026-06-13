@@ -37,26 +37,31 @@ export default function MainCourses({
 
   // Subscribe to community resources
   useEffect(() => {
-    const q = query(
-      collection(db, 'community_resources'),
-      where('institutionKey', '==', institution.key)
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ id: doc.id, ...doc.data() });
+    let unsubscribe: (() => void) | null = null;
+    try {
+      const q = query(
+        collection(db, 'community_resources'),
+        where('institutionKey', '==', institution.key)
+      );
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const list: any[] = [];
+        snapshot.forEach((doc) => {
+          list.push({ id: doc.id, ...doc.data() });
+        });
+        // Sort by upvotes desc, then date desc
+        list.sort((a, b) => {
+          const diff = (b.upvotes || 0) - (a.upvotes || 0);
+          if (diff !== 0) return diff;
+          return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+        });
+        setResources(list);
+      }, (error) => {
+        console.error('Firestore resources subscription error:', error);
       });
-      // Sort by upvotes desc, then date desc
-      list.sort((a, b) => {
-        const diff = (b.upvotes || 0) - (a.upvotes || 0);
-        if (diff !== 0) return diff;
-        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
-      });
-      setResources(list);
-    }, (error) => {
-      console.error("Firestore resources subscription error:", error);
-    });
-    return () => unsubscribe();
+    } catch (err) {
+      console.error('Failed to set up community resources listener:', err);
+    }
+    return () => { if (unsubscribe) unsubscribe(); };
   }, [institution.key]);
 
   const handleUpvote = async (resourceId: string, currentUpvotes: number, upvotedBy: string[] = []) => {
