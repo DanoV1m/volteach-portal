@@ -1,5 +1,6 @@
 import React from 'react';
 import { BookOpen, LogIn, LogOut, Cloud, User } from 'lucide-react';
+import LazyImage from './LazyImage';
 
 interface MainHeaderProps {
   onGoHome: () => void;
@@ -34,9 +35,12 @@ export default function MainHeader({
           onClick={onGoHome}
           className="flex cursor-pointer items-center gap-3 text-xl font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent border-none bg-transparent"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.25)] overflow-hidden">
-            <img src="/logo.png" alt="VOLTEACH Logo" className="h-full w-full object-cover" />
-          </div>
+          <LazyImage
+            src="/logo.png"
+            alt="VOLTEACH Logo"
+            priority
+            className="h-11 w-11 rounded-xl bg-slate-900 border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+          />
           <span>VOLTEACH</span>
         </button>
 
@@ -78,12 +82,27 @@ export default function MainHeader({
                 </span>
               </div>
               
-              <button 
+              <button
                 onClick={onOpenProfile}
-                className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm cursor-pointer hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]" 
+                className="h-9 w-9 rounded-xl border border-emerald-500/30 overflow-hidden cursor-pointer hover:border-emerald-500/60 transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
                 title="צפייה בפרופיל האישי"
               >
-                {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
+                {user.photoURL ? (
+                  <LazyImage
+                    src={user.photoURL}
+                    alt={user.displayName || 'תמונת פרופיל'}
+                    className="h-full w-full"
+                    fallback={
+                      <span className="flex h-full w-full items-center justify-center bg-emerald-500/10 text-emerald-400 font-bold text-sm">
+                        {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
+                      </span>
+                    }
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center bg-emerald-500/10 text-emerald-400 font-bold text-sm">
+                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
+                  </span>
+                )}
               </button>
 
               <button

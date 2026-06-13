@@ -35,7 +35,7 @@ async function startServer() {
       });
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: prompt,
       });
 
@@ -44,6 +44,27 @@ async function startServer() {
       console.error("Gemini API server-side error:", error);
       res.status(500).json({ error: error?.message || "Internal server error" });
     }
+  });
+
+  // Collect Web Vitals from production clients (sendBeacon payload)
+  app.post('/api/vitals', (req, res) => {
+    const { name, value, rating, path: urlPath } = req.body as {
+      name?: string;
+      value?: number;
+      rating?: string;
+      path?: string;
+    };
+    if (name && value !== undefined) {
+      const badge =
+        rating === 'good' ? '✅' :
+        rating === 'needs-improvement' ? '⚠️' : '❌';
+      const display =
+        name === 'CLS'
+          ? (value as number).toFixed(3)
+          : `${Math.round(value as number)}ms`;
+      console.log(`[Vitals] ${badge} ${name}: ${display}  path=${urlPath ?? '/'}`);
+    }
+    res.status(204).end();
   });
 
   // Vite integration

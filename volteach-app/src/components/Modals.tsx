@@ -4,6 +4,21 @@ import { CourseEnrichment, Institution, TopicKnowledge } from '../types';
 import { courseEnrichment, topicKnowledge } from '../data/enrichment';
 import { PhysicsSimulation } from './PhysicsSimulation';
 
+// Shared backend caller for all Gemini API calls
+const queryBackend = async (promptMsg: string): Promise<string> => {
+  const res = await fetch("/api/gemini", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: promptMsg }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  return data.text;
+};
+
 // ==========================================
 // 1. CONTACT MODAL
 // ==========================================
@@ -236,21 +251,6 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
   const [checkingAnswer, setCheckingAnswer] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Helper function to call the backend endpoint securely
-  const queryBackend = async (promptMsg: string) => {
-    const res = await fetch("/api/gemini", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: promptMsg }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    return data.text;
-  };
 
   const loadLocalQuestions = () => {
     setSubmitted(false);
@@ -604,21 +604,6 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
 
   const activeKnowledge = customKnowledge || topicKnowledge[topicName];
 
-  // Helper function to call the backend endpoint securely
-  const queryBackend = async (promptMsg: string) => {
-    const res = await fetch("/api/gemini", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: promptMsg }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    return data.text;
-  };
-
   const handleGenerateLive = async () => {
     setLoading(true);
     try {
@@ -846,8 +831,13 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
 
                   <button
                     onClick={() => {
-                      const msg = prompt('תאר את הטעות או הנוסחה השגויה שמצאת (ידווח ישירות לצוות המדריכים):');
-                      if (msg) showToast('דיווח השגיאה נקלט וסוכרן ברשויות הסייבר של VOLTEACH. תודה!', 'success');
+                      const msg = prompt('תאר את הטעות או הנוסחה השגויה שמצאת:');
+                      if (msg) {
+                        const subject = encodeURIComponent(`[VOLTEACH] דיווח שגיאה — ${topicName} (${courseTitle})`);
+                        const body = encodeURIComponent(`נושא: ${topicName}\nקורס: ${courseTitle}\n\nפרטי השגיאה:\n${msg}`);
+                        window.open(`mailto:volteach.contact@gmail.com?subject=${subject}&body=${body}`, '_blank');
+                        showToast('תודה! פתחנו עבורך חלון שליחת מייל לצוות VOLTEACH.', 'success');
+                      }
                     }}
                     className="w-full rounded-2xl bg-slate-950/40 hover:bg-slate-950 border border-red-500/25 p-3 text-center text-xs font-bold text-red-400 hover:border-red-500 transition-colors"
                   >

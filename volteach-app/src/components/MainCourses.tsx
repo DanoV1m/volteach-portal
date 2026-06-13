@@ -5,6 +5,7 @@ import { topicKnowledge } from '../data/enrichment';
 import { collection, query, where, onSnapshot, updateDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { UploadResourceModal } from './Modals';
+import { ResourceCardSkeleton } from './SkeletonUI';
 
 interface MainCoursesProps {
   institution: Institution;
@@ -33,11 +34,13 @@ export default function MainCourses({
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
 
   const [resources, setResources] = useState<any[]>([]);
+  const [resourcesLoading, setResourcesLoading] = useState(true);
   const [activeUploadCourse, setActiveUploadCourse] = useState<string | null>(null);
 
   // Subscribe to community resources
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
+    setResourcesLoading(true);
     try {
       const q = query(
         collection(db, 'community_resources'),
@@ -55,11 +58,14 @@ export default function MainCourses({
           return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
         });
         setResources(list);
+        setResourcesLoading(false);
       }, (error) => {
         console.error('Firestore resources subscription error:', error);
+        setResourcesLoading(false);
       });
     } catch (err) {
       console.error('Failed to set up community resources listener:', err);
+      setResourcesLoading(false);
     }
     return () => { if (unsubscribe) unsubscribe(); };
   }, [institution.key]);
@@ -429,7 +435,9 @@ export default function MainCourses({
                     </div>
 
                     {/* Resources list */}
-                    {resources.filter(r => r.courseTitle === c.title).length === 0 ? (
+                    {resourcesLoading ? (
+                      <ResourceCardSkeleton />
+                    ) : resources.filter(r => r.courseTitle === c.title).length === 0 ? (
                       <p className="text-xs text-slate-500 py-2 text-center">אין עדיין חומרים משותפים לקורס זה. היה הראשון לשתף! ⚡</p>
                     ) : (
                       <div className="grid gap-2 sm:grid-cols-2">
@@ -437,10 +445,10 @@ export default function MainCourses({
                           const hasUpvoted = r.upvotedBy?.includes(auth.currentUser?.uid || '');
                           return (
                             <div key={r.id} className="flex items-center justify-between rounded-2xl border border-slate-850 bg-slate-900/30 p-3 hover:border-slate-800 transition-all">
-                              <a 
-                                href={r.webViewLink} 
-                                target="_blank" 
-                                rel="noreferrer" 
+                              <a
+                                href={r.webViewLink}
+                                target="_blank"
+                                rel="noreferrer"
                                 className="flex items-center gap-3 min-w-0 flex-1 hover:text-emerald-400 transition-colors"
                               >
                                 <div className="text-xl shrink-0">
@@ -455,8 +463,8 @@ export default function MainCourses({
                               <button
                                 onClick={() => handleUpvote(r.id, r.upvotes || 0, r.upvotedBy || [])}
                                 className={`flex items-center gap-1 rounded-xl py-1 px-2.5 text-[10px] font-bold transition-all border ${
-                                  hasUpvoted 
-                                    ? 'bg-emerald-600/20 border-emerald-500/30 text-emerald-400' 
+                                  hasUpvoted
+                                    ? 'bg-emerald-600/20 border-emerald-500/30 text-emerald-400'
                                     : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:text-slate-200'
                                 }`}
                               >
@@ -545,6 +553,7 @@ export default function MainCourses({
               frameBorder="0"
               id="driveIframe"
               title="תצוגת חומרי לימוד גוגל דרייב"
+              loading="lazy"
               allowFullScreen
             />
           </div>

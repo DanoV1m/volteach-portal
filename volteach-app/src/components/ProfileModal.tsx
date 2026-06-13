@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Mail, Calendar, BookOpen, Shield, LogOut, User } from 'lucide-react';
 import type { User as FirebaseUser } from 'firebase/auth';
+import LazyImage from './LazyImage';
 
 interface ProfileModalProps {
   user: FirebaseUser | null;
@@ -40,9 +41,22 @@ export default function ProfileModal({ user, formulasCount, onClose, onLogout, o
         </button>
 
         {/* Profile Avatar */}
-        <div className="absolute top-12 right-6 flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-slate-900 bg-emerald-500 text-3xl font-black text-white shadow-lg">
-          {initial ? initial : <User className="h-10 w-10" />}
-        </div>
+        {user.photoURL ? (
+          <LazyImage
+            src={user.photoURL}
+            alt={user.displayName || 'תמונת פרופיל'}
+            className="absolute top-12 right-6 h-20 w-20 rounded-2xl border-4 border-slate-900 shadow-lg"
+            fallback={
+              <span className="flex h-full w-full items-center justify-center bg-emerald-500 text-3xl font-black text-white">
+                {initial || <User className="h-10 w-10" />}
+              </span>
+            }
+          />
+        ) : (
+          <div className="absolute top-12 right-6 flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-slate-900 bg-emerald-500 text-3xl font-black text-white shadow-lg">
+            {initial ? initial : <User className="h-10 w-10" />}
+          </div>
+        )}
 
         {/* Profile Details */}
         <div className="pt-12 pb-6 px-6">

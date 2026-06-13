@@ -4,6 +4,7 @@ import { institutions } from './data/institutions';
 import { coursesData } from './data/courses';
 import { FormulaBookmark } from './types';
 import MainHeader from './components/MainHeader';
+import FocusPlayer from './components/FocusPlayer';
 import { sanitizeFormulaInput } from './utils/security';
 import { QuickFormulaInput } from './components/QuickFormulaInput';
 import { LegalModal } from './components/LegalModal';
@@ -11,6 +12,8 @@ import { CookieBanner } from './components/CookieBanner';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
+
+import { CoursePageSkeleton, FormulasPageSkeleton } from './components/SkeletonUI';
 
 // Lazily loaded views — each becomes its own chunk
 const MainHome = lazy(() => import('./components/MainHome'));
@@ -64,6 +67,7 @@ export default function App() {
 
   // Bookmarks State
   const [bookmarks, setBookmarks] = useState<FormulaBookmark[]>([]);
+  const [bookmarksLoading, setBookmarksLoading] = useState(false);
 
   // Modals state
   const [isContactOpen, setIsContactOpen] = useState(false);
@@ -147,6 +151,7 @@ export default function App() {
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
     if (user) {
+      setBookmarksLoading(true);
       const path = `users/${user.uid}/formulas`;
       try {
         const q = query(collection(db, path));
@@ -161,14 +166,18 @@ export default function App() {
             });
           });
           setBookmarks(formulasList);
+          setBookmarksLoading(false);
         }, (error) => {
           handleFirestoreError(error, OperationType.LIST, path);
+          setBookmarksLoading(false);
         });
       } catch (err) {
         console.error(err);
+        setBookmarksLoading(false);
       }
     } else {
-      // Guest local storage fallback
+      // Guest local storage fallback — synchronous, no loading state needed
+      setBookmarksLoading(false);
       try {
         const saved = localStorage.getItem('vt_my_formulas');
         if (saved) setBookmarks(JSON.parse(saved));
@@ -712,7 +721,7 @@ export default function App() {
 
             {/* VIEW 4: COURSES SEMESTER DASHBOARD */}
             {view === 'courses' && selectedInstitution && selectedYear && selectedSemester && (
-              <Suspense fallback={<ViewFallback />}>
+              <Suspense fallback={<CoursePageSkeleton />}>
                 <MainCourses
                   institution={selectedInstitution}
                   year={selectedYear}
@@ -777,7 +786,9 @@ export default function App() {
                   </div>
                 </div>
 
-                {bookmarks.length === 0 ? (
+                {bookmarksLoading ? (
+                  <FormulasPageSkeleton />
+                ) : bookmarks.length === 0 ? (
                   <div className="rounded-3xl border border-dashed border-slate-800 bg-slate-950/20 p-12 text-center text-slate-400">
                     <span className="text-4xl block mb-2">📄</span>
                     <h3 className="text-lg font-bold text-white">מחברת הנוסחאות ריקה</h3>
@@ -918,6 +929,8 @@ export default function App() {
       />
 
       <CookieBanner />
+
+      <FocusPlayer />
 
       {isProfileOpen && (
         <Suspense fallback={null}>

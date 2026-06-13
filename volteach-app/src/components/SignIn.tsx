@@ -114,6 +114,8 @@ export default function SignIn({ onSuccess }: SignInProps) {
         msg = 'משתמש זה אינו קיים במערכת.';
       } else if (err.code === 'auth/wrong-password') {
         msg = 'הסיסמה שהוקלדה אינה נכונה.';
+      } else if (err.code === 'auth/invalid-credential') {
+        msg = 'האימייל או הסיסמה שגויים. אנא בדוק ונסה שנית.';
       } else if (err.code === 'auth/invalid-email') {
         msg = 'כתובת האימייל אינה תקינה.';
       } else if (err.code === 'auth/weak-password') {
