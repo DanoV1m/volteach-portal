@@ -8,10 +8,11 @@ const SCOPES = [
 ].join(' ');
 
 function getRedirectUri(): string {
-  const { hostname, host, protocol } = window.location;
-  return hostname === 'localhost' || hostname === '127.0.0.1'
-    ? `${protocol}//${host}`
-    : 'https://volteach-portal.web.app';
+  const { hostname } = window.location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://127.0.0.1:3000';
+  }
+  return 'https://volteach-portal.web.app';
 }
 
 // ── PKCE helpers ──────────────────────────────────────────────────────────────
