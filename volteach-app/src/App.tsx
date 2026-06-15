@@ -10,8 +10,9 @@ import { QuickFormulaInput } from './components/QuickFormulaInput';
 import { LegalModal } from './components/LegalModal';
 import { CookieBanner } from './components/CookieBanner';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
-import { collection, doc, query, onSnapshot, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, query, onSnapshot, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
+import { TermsAgreementModal } from './components/TermsAgreementModal';
 
 import { CoursePageSkeleton, FormulasPageSkeleton } from './components/SkeletonUI';
 
@@ -136,13 +137,26 @@ export default function App() {
 
   // Auth State
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [tosAccepted, setTosAccepted] = useState<boolean | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // Monitor Auth Changes
+  // Monitor Auth Changes + ToS check
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+      if (firebaseUser) {
+        try {
+          const userRef = doc(db, 'users', firebaseUser.uid);
+          const snap = await getDoc(userRef);
+          setTosAccepted(snap.exists() && snap.data().tosAccepted === true);
+        } catch {
+          setTosAccepted(false);
+        }
+      } else {
+        setTosAccepted(null);
+      }
+      setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -228,6 +242,34 @@ export default function App() {
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 3500);
+  };
+
+  const acceptTos = async () => {
+    if (!user) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
+      if (snap.exists()) {
+        await setDoc(userRef, {
+          ...snap.data(),
+          tosAccepted: true,
+          tosAcceptedAt: serverTimestamp()
+        });
+      } else {
+        await setDoc(userRef, {
+          uid: user.uid,
+          email: user.email || '',
+          displayName: user.displayName || '',
+          createdAt: serverTimestamp(),
+          tosAccepted: true,
+          tosAcceptedAt: serverTimestamp()
+        });
+      }
+      setTosAccepted(true);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, `users/${user.uid}`);
+      addToast('שגיאה בשמירת הסכמה לתנאי שימוש', 'error');
+    }
   };
 
   const selectedInstitution = institutions.find(i => i.key === selectedInstitutionKey);
@@ -428,8 +470,91 @@ export default function App() {
     }
   };
 
+  // Auth loading — wait for Firebase to resolve session
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-indigo-400" />
+          <p className="text-xs text-slate-500">מאמת זהות...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Auth guard — full-page sign-in when no session
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans antialiased flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Background glow */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-3xl" />
+          <div className="absolute -bottom-40 right-1/4 w-[400px] h-[400px] rounded-full bg-violet-600/8 blur-3xl" />
+        </div>
+
+        {/* Toasts */}
+        <div className="fixed bottom-6 left-6 z-55 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
+          {toasts.map(t => (
+            <div
+              key={t.id}
+              className={`pointer-events-auto flex items-center gap-3 rounded-2xl border bg-slate-950/95 p-4 px-5 text-sm shadow-xl border-l-4 ${
+                t.type === 'error' ? 'border-red-500' : 'border-emerald-500'
+              }`}
+            >
+              <span>{t.type === 'error' ? '⚠️' : t.type === 'success' ? '✅' : '💡'}</span>
+              <p className="font-semibold text-slate-100">{t.msg}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="relative z-10 w-full max-w-md">
+          {/* Branding */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <Zap className="h-8 w-8 text-indigo-400" />
+              <span className="text-3xl font-black text-white tracking-tight">VOLTEACH</span>
+            </div>
+            <p className="text-sm text-slate-400">פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל</p>
+          </div>
+
+          <Suspense fallback={<div className="h-64 flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-700 border-t-indigo-400" /></div>}>
+            <SignIn onSuccess={(msg) => addToast(msg, 'success')} />
+          </Suspense>
+
+          <div className="mt-6 text-center text-xs text-slate-600 flex items-center justify-center gap-4">
+            <button
+              onClick={() => { setLegalType('terms'); setIsLegalOpen(true); }}
+              className="hover:text-indigo-400 transition-colors"
+            >
+              תנאי שימוש
+            </button>
+            <span className="text-slate-800">·</span>
+            <button
+              onClick={() => { setLegalType('privacy'); setIsLegalOpen(true); }}
+              className="hover:text-emerald-400 transition-colors"
+            >
+              מדיניות פרטיות
+            </button>
+          </div>
+        </div>
+
+        <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} type={legalType} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans antialiased overflow-x-hidden pt-20">
+      {/* Terms of Service blocking modal for users who haven't accepted yet */}
+      {tosAccepted === false && (
+        <TermsAgreementModal
+          onAccept={acceptTos}
+          onDecline={() => {
+            signOut(auth);
+            addToast('התנתקת מהמערכת', 'info');
+          }}
+        />
+      )}
       
       {/* GLOBAL TOAST BANNER */}
       <div className="fixed bottom-6 left-6 z-55 flex flex-col gap-3 pointer-events-none max-w-sm w-full vt-toast-container print:hidden">
@@ -464,7 +589,7 @@ export default function App() {
         cacheDotClass={navigator.onLine ? "bg-emerald-500 shadow-[0_0_8px_#10b981]" : "bg-amber-500 shadow-[0_0_8px_#f59e0b]"}
         onShowCacheInfo={() => addToast('אחסון המידע פועל במצב אופליין ובשילוב סימולטור הקידוד המהיר.', 'info')}
         user={user}
-        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAuth={() => {}}
         onLogout={() => {
           signOut(auth).then(() => {
             addToast('התנתקת בהצלחה מהמערכת', 'info');
@@ -954,28 +1079,6 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* SIGN IN MODAL OVERLAY */}
-      {isAuthOpen && (
-        <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animation-fadeIn">
-          <div className="relative w-full max-w-md">
-            <button
-              onClick={() => setIsAuthOpen(false)}
-              className="absolute top-4 left-4 z-10 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 p-2 text-slate-400 hover:text-white transition-colors"
-              aria-label="סגור חלון"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <Suspense fallback={null}>
-              <SignIn
-                onSuccess={(msg) => {
-                  setIsAuthOpen(false);
-                  addToast(msg, "success");
-                }}
-              />
-            </Suspense>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -24,7 +24,7 @@ export default function FocusPlayer() {
   const [minimized, setMinimized] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [stationIdx, setStationIdx] = useState(0);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // stationIdx is always a valid index (0-2), cast away undefined
@@ -138,9 +138,9 @@ export default function FocusPlayer() {
             <button
               onClick={() => setMuted(m => !m)}
               className="p-2 text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800"
-              title={muted ? 'בטל השתקה' : 'השתק'}
+              title={muted ? 'הפעל קול' : 'השתק'}
             >
-              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              {muted ? <VolumeX className="h-4 w-4 text-amber-400" /> : <Volume2 className="h-4 w-4" />}
             </button>
 
             <button
@@ -154,25 +154,24 @@ export default function FocusPlayer() {
             <div className="text-[10px] text-slate-500 font-mono">LIVE</div>
           </div>
 
-          {/* Hidden YouTube iframe */}
-          <iframe
-            ref={iframeRef}
-            key={`${stationIdx}-${playing}`}
-            src={
-              playing
-                ? `https://www.youtube.com/embed/${station.videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&loop=1&playlist=${station.videoId}`
-                : ''
-            }
-            allow="autoplay"
-            className="hidden"
-            title="focus player audio"
-          />
+          {muted && playing && (
+            <div className="px-4 pb-3 text-center text-[10px] text-amber-400/80">
+              לחץ על 🔇 להפעלת הקול
+            </div>
+          )}
         </>
       )}
 
       {minimized && (
         <div className="flex items-center gap-3 px-4 pb-3">
           <div className="flex-1 text-xs font-semibold text-white truncate">{station.label}</div>
+          <button
+            onClick={() => setMuted(m => !m)}
+            className="p-1 text-slate-400 hover:text-white transition-colors"
+            title={muted ? 'הפעל קול' : 'השתק'}
+          >
+            {muted ? <VolumeX className="h-3.5 w-3.5 text-amber-400" /> : <Volume2 className="h-3.5 w-3.5" />}
+          </button>
           <button
             onClick={handlePlay}
             className={`flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br ${station.color} text-white`}
@@ -181,6 +180,16 @@ export default function FocusPlayer() {
           </button>
         </div>
       )}
+
+      {/* YouTube iframe — rendered outside minimized blocks so music continues when minimized */}
+      <iframe
+        ref={iframeRef}
+        key={playing ? `${stationIdx}-play-${muted ? 'muted' : 'sound'}` : `${stationIdx}-paused`}
+        src={`https://www.youtube.com/embed/${station.videoId}?autoplay=${playing ? 1 : 0}&mute=${muted || !playing ? 1 : 0}&controls=0&loop=1&playlist=${station.videoId}&enablejsapi=1`}
+        allow="autoplay; encrypted-media"
+        className="hidden"
+        title="focus player audio"
+      />
     </div>
   );
 }
