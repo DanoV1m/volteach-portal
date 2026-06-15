@@ -4,7 +4,6 @@ import { institutions } from './data/institutions';
 import { coursesData } from './data/courses';
 import { FormulaBookmark } from './types';
 import MainHeader from './components/MainHeader';
-import FocusPlayer from './components/FocusPlayer';
 import { sanitizeFormulaInput } from './utils/security';
 import { QuickFormulaInput } from './components/QuickFormulaInput';
 import { LegalModal } from './components/LegalModal';
@@ -1055,9 +1054,8 @@ export default function App() {
 
       <CookieBanner />
 
-      <FocusPlayer />
 
-      {isProfileOpen && (
+{isProfileOpen && (
         <Suspense fallback={null}>
           <ProfileModal
             user={user}
