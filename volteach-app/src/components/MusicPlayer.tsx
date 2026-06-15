@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Music2, Minimize2, Maximize2, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Minimize2, Maximize2, X } from 'lucide-react';
 
 const STATIONS = [
   {
@@ -31,115 +31,178 @@ const STATIONS = [
   },
 ] as const;
 
+const PANEL_W = 288;
+const BTN_SIZE = 44;
+
 export default function MusicPlayer() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [stationIdx, setStationIdx] = useState(0);
 
+  // Position — null until mounted (avoids SSR mismatch)
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [didDrag, setDidDrag] = useState(false);
+  const dragRef = useRef<{ mx: number; my: number; px: number; py: number } | null>(null);
+
+  useEffect(() => {
+    setPos({ x: 24, y: window.innerHeight - 72 });
+  }, []);
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!pos) return;
+    e.preventDefault();
+    dragRef.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
+    setDidDrag(false);
+    setDragging(true);
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      const dx = e.clientX - dragRef.current.mx;
+      const dy = e.clientY - dragRef.current.my;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) setDidDrag(true);
+      setPos({
+        x: Math.max(8, Math.min(window.innerWidth - BTN_SIZE - 8, dragRef.current.px + dx)),
+        y: Math.max(8, Math.min(window.innerHeight - BTN_SIZE - 8, dragRef.current.py + dy)),
+      });
+    };
+    const onUp = () => setDragging(false);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [dragging]);
+
+  if (!pos) return null;
+
   const station = STATIONS[stationIdx]!;
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        title="פתח נגן מוזיקה"
-        className="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full border border-indigo-500/30 bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-indigo-300 shadow-lg backdrop-blur-md hover:border-indigo-400 hover:text-white transition-all"
-      >
-        <Music2 className="h-3.5 w-3.5 text-indigo-400" />
-        <span>Focus Music</span>
-      </button>
-    );
-  }
+  // Panel position — opens up or down depending on where the button is
+  const panelX = Math.max(8, Math.min(window.innerWidth - PANEL_W - 8, pos.x - PANEL_W / 2 + BTN_SIZE / 2));
+  const openUpward = pos.y > window.innerHeight * 0.55;
+  const approxH = minimized ? 88 : station.height + 130;
+  const panelTop = openUpward
+    ? Math.max(8, pos.y - approxH - 10)
+    : pos.y + BTN_SIZE + 8;
 
   return (
-    <div className="fixed bottom-6 left-6 z-40 w-72 rounded-2xl border border-slate-700/60 bg-slate-900/97 shadow-2xl backdrop-blur-xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <div className="flex items-center gap-2">
-          <Music2 className="h-3.5 w-3.5 text-indigo-400" />
-          <span className="text-xs font-bold text-white">Focus Music</span>
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-800 ${station.textColor}`}>
-            {station.provider === 'spotify' ? 'Spotify' : 'SoundCloud'}
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setMinimized(m => !m)}
-            className="p-1 text-slate-400 hover:text-white transition-colors rounded"
-            title={minimized ? 'הרחב' : 'מזער'}
-          >
-            {minimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
-          </button>
-          <button
-            onClick={() => setOpen(false)}
-            className="p-1 text-slate-400 hover:text-red-400 transition-colors rounded"
-            title="סגור"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
+    <>
+      {/* Draggable ♪ button — always visible */}
+      <button
+        style={{ left: pos.x, top: pos.y, position: 'fixed' }}
+        onMouseDown={onMouseDown}
+        onClick={() => { if (!didDrag) setOpen(o => !o); }}
+        className={`z-50 h-11 w-11 rounded-full flex items-center justify-center text-2xl shadow-xl select-none transition-all duration-150 print:hidden ${
+          open
+            ? `bg-gradient-to-br ${station.color} text-white shadow-indigo-500/30`
+            : 'bg-slate-900/90 border border-slate-700 text-slate-300 hover:border-indigo-500/50 hover:text-white'
+        } ${dragging ? 'cursor-grabbing scale-90' : 'cursor-grab hover:scale-110'}`}
+        title={open ? 'סגור נגן' : 'פתח נגן מוזיקה — גרור להזזה'}
+        aria-label="נגן מוזיקה"
+      >
+        ♪
+      </button>
 
-      {!minimized && (
-        <>
-          {/* Station tabs */}
-          <div className="flex gap-1.5 px-4 pb-3">
-            {STATIONS.map((s, i) => (
+      {/* Player panel — appears when open */}
+      {open && (
+        <div
+          style={{ left: panelX, top: panelTop, position: 'fixed' }}
+          className="z-40 w-72 rounded-2xl border border-slate-700/60 bg-slate-900/97 shadow-2xl backdrop-blur-xl overflow-hidden print:hidden"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-3 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-base leading-none">♪</span>
+              <span className="text-xs font-bold text-white">Focus Music</span>
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-800 ${station.textColor}`}>
+                {station.provider === 'spotify' ? 'Spotify' : 'SoundCloud'}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
               <button
-                key={i}
-                onClick={() => setStationIdx(i)}
-                className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
-                  i === stationIdx
-                    ? `bg-gradient-to-r ${s.color} text-white shadow-md`
-                    : 'bg-slate-800 text-slate-400 hover:text-white'
-                }`}
+                onClick={() => setMinimized(m => !m)}
+                className="p-1 text-slate-400 hover:text-white transition-colors rounded"
+                title={minimized ? 'הרחב' : 'מזער'}
               >
-                <span>{s.emoji}</span>
-                <span>{s.label}</span>
+                {minimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
               </button>
-            ))}
+              <button
+                onClick={() => setOpen(false)}
+                className="p-1 text-slate-400 hover:text-red-400 transition-colors rounded"
+                title="סגור"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
 
-          {/* Embed player */}
-          <div className="px-3 pb-3">
-            <iframe
-              key={stationIdx}
-              src={station.src}
-              width="100%"
-              height={station.height}
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-              className="rounded-xl border-0"
-              title={`${station.label} player`}
-            />
-          </div>
+          {!minimized && (
+            <>
+              {/* Station selector */}
+              <div className="flex gap-1.5 px-4 pb-3">
+                {STATIONS.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setStationIdx(i)}
+                    className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
+                      i === stationIdx
+                        ? `bg-gradient-to-r ${s.color} text-white shadow-md`
+                        : 'bg-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <span>{s.emoji}</span>
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
 
-          <div className="px-4 pb-3 text-center text-[9px] text-slate-600">
-            {station.provider === 'spotify'
-              ? 'נדרש חשבון Spotify לניגון מלא'
-              : 'SoundCloud — ניגון חינמי'}
-          </div>
-        </>
-      )}
+              {/* Embedded player */}
+              <div className="px-3 pb-2">
+                <iframe
+                  key={stationIdx}
+                  src={station.src}
+                  width="100%"
+                  height={station.height}
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  className="rounded-xl border-0 block"
+                  title={`${station.label} player`}
+                />
+              </div>
 
-      {minimized && (
-        <div className="flex items-center gap-2 px-4 pb-3">
-          {STATIONS.map((s, i) => (
-            <button
-              key={i}
-              onClick={() => setStationIdx(i)}
-              title={s.label}
-              className={`flex-1 rounded-lg py-1.5 text-sm transition-all ${
-                i === stationIdx
-                  ? `bg-gradient-to-r ${s.color} shadow-sm`
-                  : 'bg-slate-800 text-slate-500 hover:text-white'
-              }`}
-            >
-              {s.emoji}
-            </button>
-          ))}
+              <p className="px-4 pb-3 text-center text-[9px] text-slate-600">
+                {station.provider === 'spotify'
+                  ? 'נדרש חשבון Spotify לניגון מלא'
+                  : 'SoundCloud — ניגון חינמי ללא חשבון'}
+              </p>
+            </>
+          )}
+
+          {minimized && (
+            <div className="flex gap-1.5 px-4 pb-3">
+              {STATIONS.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => setStationIdx(i)}
+                  title={s.label}
+                  className={`flex-1 rounded-lg py-1.5 text-base transition-all ${
+                    i === stationIdx
+                      ? `bg-gradient-to-r ${s.color}`
+                      : 'bg-slate-800 text-slate-500 hover:text-white'
+                  }`}
+                >
+                  {s.emoji}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 }
