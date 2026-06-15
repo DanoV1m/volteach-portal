@@ -5,6 +5,7 @@ import { coursesData } from './data/courses';
 import { FormulaBookmark } from './types';
 import MainHeader from './components/MainHeader';
 import { sanitizeFormulaInput } from './utils/security';
+import MusicPlayer from './components/MusicPlayer';
 import { QuickFormulaInput } from './components/QuickFormulaInput';
 import { LegalModal } from './components/LegalModal';
 import { CookieBanner } from './components/CookieBanner';
@@ -138,6 +139,7 @@ export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [tosAccepted, setTosAccepted] = useState<boolean | null>(null);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Monitor Auth Changes + ToS check
@@ -481,67 +483,6 @@ export default function App() {
     );
   }
 
-  // Auth guard — full-page sign-in when no session
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans antialiased flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Background glow */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-3xl" />
-          <div className="absolute -bottom-40 right-1/4 w-[400px] h-[400px] rounded-full bg-violet-600/8 blur-3xl" />
-        </div>
-
-        {/* Toasts */}
-        <div className="fixed bottom-6 left-6 z-55 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
-          {toasts.map(t => (
-            <div
-              key={t.id}
-              className={`pointer-events-auto flex items-center gap-3 rounded-2xl border bg-slate-950/95 p-4 px-5 text-sm shadow-xl border-l-4 ${
-                t.type === 'error' ? 'border-red-500' : 'border-emerald-500'
-              }`}
-            >
-              <span>{t.type === 'error' ? '⚠️' : t.type === 'success' ? '✅' : '💡'}</span>
-              <p className="font-semibold text-slate-100">{t.msg}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="relative z-10 w-full max-w-md">
-          {/* Branding */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 mb-4">
-              <Zap className="h-8 w-8 text-indigo-400" />
-              <span className="text-3xl font-black text-white tracking-tight">VOLTEACH</span>
-            </div>
-            <p className="text-sm text-slate-400">פורטל הלמידה המקיף לסטודנטים בהנדסת חשמל</p>
-          </div>
-
-          <Suspense fallback={<div className="h-64 flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-700 border-t-indigo-400" /></div>}>
-            <SignIn onSuccess={(msg) => addToast(msg, 'success')} />
-          </Suspense>
-
-          <div className="mt-6 text-center text-xs text-slate-600 flex items-center justify-center gap-4">
-            <button
-              onClick={() => { setLegalType('terms'); setIsLegalOpen(true); }}
-              className="hover:text-indigo-400 transition-colors"
-            >
-              תנאי שימוש
-            </button>
-            <span className="text-slate-800">·</span>
-            <button
-              onClick={() => { setLegalType('privacy'); setIsLegalOpen(true); }}
-              className="hover:text-emerald-400 transition-colors"
-            >
-              מדיניות פרטיות
-            </button>
-          </div>
-        </div>
-
-        <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} type={legalType} />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans antialiased overflow-x-hidden pt-20">
       {/* Terms of Service blocking modal for users who haven't accepted yet */}
@@ -588,7 +529,7 @@ export default function App() {
         cacheDotClass={navigator.onLine ? "bg-emerald-500 shadow-[0_0_8px_#10b981]" : "bg-amber-500 shadow-[0_0_8px_#f59e0b]"}
         onShowCacheInfo={() => addToast('אחסון המידע פועל במצב אופליין ובשילוב סימולטור הקידוד המהיר.', 'info')}
         user={user}
-        onOpenAuth={() => {}}
+        onOpenAuth={() => setIsAuthOpen(true)}
         onLogout={() => {
           signOut(auth).then(() => {
             addToast('התנתקת בהצלחה מהמערכת', 'info');
@@ -1053,6 +994,31 @@ export default function App() {
       />
 
       <CookieBanner />
+
+      <MusicPlayer />
+
+      {/* SIGN IN MODAL */}
+      {isAuthOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-md">
+            <button
+              onClick={() => setIsAuthOpen(false)}
+              className="absolute top-4 left-4 z-10 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 p-2 text-slate-400 hover:text-white transition-colors"
+              aria-label="סגור"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <Suspense fallback={null}>
+              <SignIn
+                onSuccess={(msg) => {
+                  setIsAuthOpen(false);
+                  addToast(msg, 'success');
+                }}
+              />
+            </Suspense>
+          </div>
+        </div>
+      )}
 
 
 {isProfileOpen && (
