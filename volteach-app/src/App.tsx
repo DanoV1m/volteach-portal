@@ -7,6 +7,10 @@ import MainHeader from './components/MainHeader';
 import { sanitizeFormulaInput } from './utils/security';
 import MusicPlayer from './components/MusicPlayer';
 import { handleSpotifyCallback } from './utils/spotify';
+import { SearchModal } from './components/SearchModal';
+import { FormulaQuiz } from './components/FormulaQuiz';
+import { FormulaExplainer } from './components/FormulaExplainer';
+import { formulasSheets } from './data/formulas';
 import { QuickFormulaInput } from './components/QuickFormulaInput';
 import { LegalModal } from './components/LegalModal';
 import { CookieBanner } from './components/CookieBanner';
@@ -14,6 +18,7 @@ import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import { TermsAgreementModal } from './components/TermsAgreementModal';
+import { loadRemoteConfig } from './utils/fetchConfig';
 
 import { CoursePageSkeleton, FormulasPageSkeleton } from './components/SkeletonUI';
 
@@ -136,6 +141,11 @@ export default function App() {
     }
   };
 
+  // Search + Quiz + AI Explainer state
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [explainerFormula, setExplainerFormula] = useState<{ name: string; eq: string } | null>(null);
+
   // Auth State
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -148,6 +158,7 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
+        loadRemoteConfig();
         try {
           const userRef = doc(db, 'users', firebaseUser.uid);
           const snap = await getDoc(userRef);
@@ -218,10 +229,25 @@ export default function App() {
     if (code) {
       window.history.replaceState({}, '', window.location.pathname);
       handleSpotifyCallback(code)
-        .then(() => addToast('חוברת בהצלחה ל-Spotify! 🎵', 'success'))
+        .then(() => {
+          addToast('חוברת בהצלחה ל-Spotify! 🎵', 'success');
+          window.dispatchEvent(new CustomEvent('spotify-connected'));
+        })
         .catch(() => addToast('שגיאה בהתחברות ל-Spotify', 'error'));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Global Ctrl+K search shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(o => !o);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, []);
 
   // Listen to the custom toast event from sub-components
@@ -418,77 +444,26 @@ export default function App() {
   };
 
   const handlePrint = () => {
+    const style = document.createElement('style');
+    style.id = 'vt-print-style';
+    style.textContent = `
+      @media print {
+        @page { margin: 1.5cm; size: A4; }
+        body { background: white !important; color: #0f172a !important; }
+        .print\\:hidden { display: none !important; }
+        #myFormulasList { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .katex { font-size: 1em !important; }
+        .rounded-2xl { border: 1px solid #e2e8f0 !important; background: #f8fafc !important; }
+        h4 { color: #475569 !important; font-size: 11px !important; }
+        .text-cyan-300 { color: #0f172a !important; }
+      }
+    `;
+    document.head.appendChild(style);
     window.print();
+    setTimeout(() => document.getElementById('vt-print-style')?.remove(), 1000);
   };
 
-  // Static Formula Sheets Lists
-  const formulasSheets: Record<string, { category: string; list: { name: string; eq: string }[] }> = {
-    circuits: {
-      category: "🔌 מעגלים חשמליים",
-      list: [
-        { name: "תבנין", eq: "V_{th}=V_{oc}" },
-        { name: "נורטון", eq: "I_N=I_{sc}" },
-        { name: "אימפדנס קבל", eq: "Z_c=\\frac{1}{j\\omega C}" },
-        { name: "אימפדנס סליל", eq: "Z_l=j\\omega L" },
-        { name: "מחלק מתח", eq: "V_x=V\\frac{R_x}{\\sum R}" },
-        { name: "הספק ריאקטיבי", eq: "Q=VI\\sin(\\phi)" },
-        { name: "גורם הספק", eq: "PF=\\cos(\\phi)" }
-      ]
-    },
-    electronics: {
-      category: "💡 אלקטרוניקה",
-      list: [
-        { name: "דיודה", eq: "I_d=I_s \\cdot e^{\\frac{V}{nV_T}}" },
-        { name: "BJT (זרם)", eq: "I_c=\\beta \\cdot I_b" },
-        { name: "MOSFET Sat", eq: "I_d=\\frac{1}{2}\\mu_n C_{ox} \\frac{W}{L} (V_{gs}-V_t)^2" },
-        { name: "OpAmp מהפך", eq: "A_v=-\\frac{R_f}{R_{in}}" },
-        { name: "OpAmp עוקב", eq: "A_v=1+\\frac{R_f}{R_1}" },
-        { name: "CMRR", eq: "CMRR=\\frac{A_d}{A_{cm}}" }
-      ]
-    },
-    signals: {
-      category: "📶 אותות ומערכות",
-      list: [
-        { name: "פורייה CT", eq: "X(j\\omega)=\\int x(t)e^{-j\\omega t}dt" },
-        { name: "לפלס", eq: "X(s)=\\int x(t)e^{-st}dt" },
-        { name: "Z-Transform", eq: "X(z)=\\sum x[n]z^{-n}" },
-        { name: "קונבולוציה", eq: "y=x*h" },
-        { name: "Nyquist", eq: "f_s \\ge 2f_{max}" },
-        { name: "DFT", eq: "X[k]=\\sum x[n]e^{-j\\frac{2\\pi}{N}kn}" }
-      ]
-    },
-    comms: {
-      category: "📡 תקשורת",
-      list: [
-        { name: "קיבולת שאנון", eq: "C=B\\log_2(1+SNR)" },
-        { name: "AM", eq: "s(t)=A_c[1+m(t)]\\cos(\\omega_c t)" },
-        { name: "FM Deviation", eq: "\\Delta f=k_f \\cdot A_m" },
-        { name: "Friis", eq: "P_r=P_t G_t G_r \\left(\\frac{\\lambda}{4\\pi d}\\right)^2" },
-        { name: "SNR", eq: "SNR=\\frac{P_s}{P_n}" }
-      ]
-    },
-    control: {
-      category: "🎛️ בקרה",
-      list: [
-        { name: "PID", eq: "u=K_p e+K_i\\int e+K_d \\dot{e}" },
-        { name: "זמן עלייה", eq: "t_r \\approx \\frac{1.8}{\\omega_n}" },
-        { name: "Overshoot", eq: "OS=e^{-\\frac{\\pi\\zeta}{\\sqrt{1-\\zeta^2}}}" },
-        { name: "יציבות ראוס", eq: "\\text{יציב} \\iff \\text{עמודה} > 0" },
-        { name: "שגיאה מצב", eq: "e_{ss}=\\frac{1}{1+K_p}" }
-      ]
-    },
-    trig: {
-      category: "📐 זהויות טריגונומטריות",
-      list: [
-        { name: "זהות פיתגורס", eq: "\\sin^2(x)+\\cos^2(x)=1" },
-        { name: "זווית כפולה סינוס", eq: "\\sin(2x)=2\\sin(x)\\cos(x)" },
-        { name: "זווית כפולה קוסינוס", eq: "\\cos(2x)=\\cos^2(x)-\\sin^2(x)" },
-        { name: "טנגנס", eq: "\\tan(x)=\\frac{\\sin(x)}{\\cos(x)}" },
-        { name: "סכום זוויות סינוס", eq: "\\sin(a \\pm b)=\\sin(a)\\cos(b) \\pm \\cos(a)\\sin(b)" },
-        { name: "סכום זוויות קוסינוס", eq: "\\cos(a \\pm b)=\\cos(a)\\cos(b) \\mp \\sin(a)\\sin(b)" }
-      ]
-    }
-  };
+  // formulasSheets imported from src/data/formulas.ts
 
   // Auth loading — wait for Firebase to resolve session
   if (authLoading) {
@@ -498,6 +473,80 @@ export default function App() {
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-indigo-400" />
           <p className="text-xs text-slate-500">מאמת זהות...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Not authenticated — login gate
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] text-slate-100 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* Background glow */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-emerald-500/5 blur-[120px]" />
+        </div>
+
+        <div className="relative flex flex-col items-center gap-8 text-center max-w-sm w-full">
+          {/* Logo */}
+          <div className="flex flex-col items-center gap-4">
+            <img
+              src="/logo.png"
+              alt="VOLTEACH"
+              className="h-20 w-20 rounded-2xl border border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.2)]"
+            />
+            <h1 className="text-4xl font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+              VOLTEACH
+            </h1>
+          </div>
+
+          {/* Tagline */}
+          <div className="space-y-1">
+            <p className="text-lg font-bold text-white">פלטפורמת הלמידה להנדסת חשמל</p>
+            <p className="text-sm text-slate-400">נוסחאות, חומרי לימוד ועוד — הכל במקום אחד</p>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-3 gap-3 w-full text-center">
+            {[
+              { icon: '📐', label: 'נוסחאות' },
+              { icon: '📚', label: 'חומרי לימוד' },
+              { icon: '✨', label: 'הסברי AI' },
+            ].map(({ icon, label }) => (
+              <div key={label} className="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-3">
+                <div className="text-xl mb-1">{icon}</div>
+                <div className="text-[11px] text-slate-400">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={() => setIsAuthOpen(true)}
+            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 px-6 py-3.5 text-sm font-black text-white shadow-[0_4px_20px_rgba(16,185,129,0.35)] transition-all hover:shadow-[0_4px_28px_rgba(16,185,129,0.5)] hover:scale-[1.02]"
+          >
+            התחברות / הרשמה
+          </button>
+
+          <p className="text-[11px] text-slate-600">כניסה נדרשת לשימוש בפלטפורמה</p>
+        </div>
+
+        {/* Auth Modal */}
+        {isAuthOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div className="relative w-full max-w-md">
+              <button
+                onClick={() => setIsAuthOpen(false)}
+                className="absolute top-4 left-4 z-10 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 p-2 text-slate-400 hover:text-white transition-colors"
+                aria-label="סגור"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <Suspense fallback={null}>
+                <SignIn onSuccess={(msg) => { setIsAuthOpen(false); addToast(msg, 'success'); }} />
+              </Suspense>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -544,17 +593,10 @@ export default function App() {
           setView('my-formulas');
         }}
         breadcrumbContent={getBreadcrumbs()}
-        cacheLabel={navigator.onLine ? "מחובר ומאותחל" : "מצב ללא חיבור (Offline)"}
-        cacheDotClass={navigator.onLine ? "bg-emerald-500 shadow-[0_0_8px_#10b981]" : "bg-amber-500 shadow-[0_0_8px_#f59e0b]"}
-        onShowCacheInfo={() => addToast('אחסון המידע פועל במצב אופליין ובשילוב סימולטור הקידוד המהיר.', 'info')}
         user={user}
         onOpenAuth={() => setIsAuthOpen(true)}
-        onLogout={() => {
-          signOut(auth).then(() => {
-            addToast('התנתקת בהצלחה מהמערכת', 'info');
-          });
-        }}
         onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenSearch={() => setIsSearchOpen(true)}
       />
 
       {/* APP LAYOUT */}
@@ -594,6 +636,13 @@ export default function App() {
             <div className="p-4 space-y-6 animate-fadeIn pb-16">
               {/* Header Title */}
               <div className="flex items-center justify-between border-b border-slate-900 pb-3.5 pr-2">
+                <button
+                  onClick={() => setIsQuizOpen(true)}
+                  className="flex items-center gap-1.5 rounded-xl bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 px-3 py-1.5 text-[10px] font-black text-indigo-400 transition-all"
+                  title="בוחן נוסחאות"
+                >
+                  🃏 בוחן
+                </button>
                 <span className="text-xs font-black tracking-widest text-emerald-400 flex items-center gap-1.5">
                   <Zap className="h-4 w-4 text-emerald-400" />
                   <span>כלי עזר ונוסחאות</span>
@@ -691,12 +740,28 @@ export default function App() {
                             return (
                               <div key={fid} className="p-3 hover:bg-slate-900/20 flex flex-col gap-1 text-right">
                                 <div className="flex items-center justify-between text-[11px] text-slate-400">
-                                  <span>{f.name}</span>
-                                  <button 
-                                    onClick={() => toggleBookmark(fid, f.name, `$$${f.eq}$$`)}
-                                    className={`text-xs font-bold hover:text-white transition-colors ${isBookmarked ? 'text-emerald-400' : 'text-slate-600'}`}
+                                  <div className="flex items-center gap-1.5">
+                                    {user && (
+                                      <button
+                                        onClick={() => setExplainerFormula({ name: f.name, eq: f.eq })}
+                                        className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors opacity-0 group-hover:opacity-100"
+                                        title="הסבר AI"
+                                      >
+                                        ✨
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={() => toggleBookmark(fid, f.name, `$$${f.eq}$$`)}
+                                      className={`text-xs font-bold hover:text-white transition-colors ${isBookmarked ? 'text-emerald-400' : 'text-slate-600'}`}
+                                    >
+                                      {isBookmarked ? '★' : '+'}
+                                    </button>
+                                  </div>
+                                  <button
+                                    onClick={() => user ? setExplainerFormula({ name: f.name, eq: f.eq }) : setIsAuthOpen(true)}
+                                    className="hover:text-white transition-colors"
                                   >
-                                    {isBookmarked ? '★' : '+'}
+                                    {f.name}
                                   </button>
                                 </div>
                                 <div className="text-center font-mono text-xs text-cyan-300 pointer-events-none direction-ltr pt-1">
@@ -748,15 +813,6 @@ export default function App() {
                   onSelectType={type => {
                     setSelectedType(type);
                     setView('institutions');
-                  }}
-                  onSelectSearchCourse={courseTitle => {
-                    setEnrichmentCourse(courseTitle);
-                    setIsEnrichmentOpen(true);
-                  }}
-                  onSelectSearchTopic={(course, topic) => {
-                    setAiCourse(course);
-                    setAiTopic(topic);
-                    setIsAiOpen(true);
                   }}
                 />
               </Suspense>
@@ -1015,6 +1071,36 @@ export default function App() {
       <CookieBanner />
 
       <MusicPlayer />
+
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onSelectInstitution={(key, type) => {
+          setSelectedType(type);
+          setSelectedInstitutionKey(key);
+          setSelectedYear(null);
+          setSelectedSemester(null);
+          setView('years');
+        }}
+        onSelectCourse={(institutionKey, year, semester) => {
+          const inst = institutions.find(i => institutionKey.startsWith(i.key));
+          if (inst) {
+            setSelectedType(inst.type);
+            setSelectedInstitutionKey(institutionKey);
+            setSelectedYear(year);
+            setSelectedSemester(semester);
+            setView('courses');
+          }
+        }}
+        onSelectFormula={(categoryId) => {
+          setIsSidebarCollapsed(false);
+          setOpenAccordion(categoryId);
+        }}
+      />
+
+      <FormulaQuiz isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
+
+      <FormulaExplainer formula={explainerFormula} onClose={() => setExplainerFormula(null)} />
 
       {/* SIGN IN MODAL */}
       {isAuthOpen && (

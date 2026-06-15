@@ -57,7 +57,13 @@ service cloud.firestore {
         && incoming().createdAt == existing().createdAt;
     }
 
-    // 4. Community Shared Resources
+    // 4. App config (API keys) — read by any signed-in user, write by admin only
+    match /config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.token.email == 'vimidan99@gmail.com';
+    }
+
+    // 5. Community Shared Resources
     match /community_resources/{resourceId} {
       allow read: if true;
       allow create: if isSignedIn() && isValidId(resourceId)

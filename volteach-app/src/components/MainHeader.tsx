@@ -1,31 +1,25 @@
 import React from 'react';
-import { BookOpen, LogIn, LogOut, Cloud, User } from 'lucide-react';
+import { BookOpen, LogIn, User, Search } from 'lucide-react';
 import LazyImage from './LazyImage';
 
 interface MainHeaderProps {
   onGoHome: () => void;
   onOpenMyFormulas: () => void;
   breadcrumbContent: React.ReactNode;
-  cacheLabel: string;
-  cacheDotClass: string;
-  onShowCacheInfo: () => void;
   user: any | null;
   onOpenAuth: () => void;
-  onLogout: () => void;
   onOpenProfile: () => void;
+  onOpenSearch: () => void;
 }
 
 export default function MainHeader({
   onGoHome,
   onOpenMyFormulas,
   breadcrumbContent,
-  cacheLabel,
-  cacheDotClass,
-  onShowCacheInfo,
   user,
   onOpenAuth,
-  onLogout,
-  onOpenProfile
+  onOpenProfile,
+  onOpenSearch,
 }: MainHeaderProps) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex h-20 items-center justify-between border-b border-slate-800 bg-slate-950/80 px-6 backdrop-blur-xl md:px-12">
@@ -51,6 +45,16 @@ export default function MainHeader({
       </div>
 
       <div className="flex items-center gap-4">
+        {/* SEARCH BUTTON */}
+        <button
+          onClick={onOpenSearch}
+          className="hidden sm:flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 hover:border-slate-600 px-3 py-2 text-xs text-slate-400 hover:text-white transition-all"
+          title="חיפוש גלובלי (Ctrl+K)"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span className="text-slate-500">חפש קורס...</span>
+        </button>
+
         {/* MY FORMULAS BUTTON */}
         <button
           onClick={onOpenMyFormulas}
@@ -60,59 +64,31 @@ export default function MainHeader({
           <span className="hidden sm:inline">הנוסחאות שלי</span>
         </button>
 
-        {/* CACHE / NETWORK STATE BADGE */}
-        <button 
-          onClick={onShowCacheInfo}
-          className="hidden sm:flex cursor-pointer items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 transition-all hover:border-emerald-500/40 hover:text-slate-100"
-          title="סטטוס חיבור ו-Cache"
-        >
-          <div className={`h-2.5 w-2.5 rounded-full ${cacheDotClass}`}></div>
-          <span>{cacheLabel}</span>
-        </button>
-
-        {/* FIREBASE AUTH SECTION */}
+{/* FIREBASE AUTH SECTION */}
         <div className="flex items-center gap-2 border-r border-slate-800 pr-2">
           {user ? (
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex flex-col text-right">
-                <span className="text-xs font-bold text-white leading-none">{user.displayName || user.email?.split('@')[0]}</span>
-                <span className="text-[10px] text-emerald-400 flex items-center gap-0.5 mt-1">
-                  <Cloud className="h-3 w-3" />
-                  ענן מסונכרן
+            <button
+              onClick={onOpenProfile}
+              className="h-9 w-9 rounded-xl border border-emerald-500/30 overflow-hidden cursor-pointer hover:border-emerald-500/60 transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+              title="פרופיל אישי"
+            >
+              {user.photoURL ? (
+                <LazyImage
+                  src={user.photoURL}
+                  alt={user.displayName || 'תמונת פרופיל'}
+                  className="h-full w-full"
+                  fallback={
+                    <span className="flex h-full w-full items-center justify-center bg-emerald-500/10 text-emerald-400 font-bold text-sm">
+                      {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
+                    </span>
+                  }
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center bg-emerald-500/10 text-emerald-400 font-bold text-sm">
+                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
                 </span>
-              </div>
-              
-              <button
-                onClick={onOpenProfile}
-                className="h-9 w-9 rounded-xl border border-emerald-500/30 overflow-hidden cursor-pointer hover:border-emerald-500/60 transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-                title="צפייה בפרופיל האישי"
-              >
-                {user.photoURL ? (
-                  <LazyImage
-                    src={user.photoURL}
-                    alt={user.displayName || 'תמונת פרופיל'}
-                    className="h-full w-full"
-                    fallback={
-                      <span className="flex h-full w-full items-center justify-center bg-emerald-500/10 text-emerald-400 font-bold text-sm">
-                        {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
-                      </span>
-                    }
-                  />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center bg-emerald-500/10 text-emerald-400 font-bold text-sm">
-                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={onLogout}
-                className="p-2 rounded-lg hover:bg-red-500/10 hover:text-red-400 text-slate-400 transition-colors"
-                title="התנתק מהחשבון"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </div>
+              )}
+            </button>
           ) : (
             <button
               onClick={onOpenAuth}
