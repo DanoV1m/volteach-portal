@@ -6,6 +6,7 @@ import { FormulaBookmark } from './types';
 import MainHeader from './components/MainHeader';
 import { sanitizeFormulaInput } from './utils/security';
 import MusicPlayer from './components/MusicPlayer';
+import { handleSpotifyCallback } from './utils/spotify';
 import { QuickFormulaInput } from './components/QuickFormulaInput';
 import { LegalModal } from './components/LegalModal';
 import { CookieBanner } from './components/CookieBanner';
@@ -204,6 +205,24 @@ export default function App() {
       if (unsubscribe) unsubscribe();
     };
   }, [user]);
+
+  // Handle Spotify OAuth callback (?code=... in URL after redirect)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+    if (error) {
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+    if (code) {
+      window.history.replaceState({}, '', window.location.pathname);
+      handleSpotifyCallback(code)
+        .then(() => addToast('חוברת בהצלחה ל-Spotify! 🎵', 'success'))
+        .catch(() => addToast('שגיאה בהתחברות ל-Spotify', 'error'));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Listen to the custom toast event from sub-components
   useEffect(() => {
