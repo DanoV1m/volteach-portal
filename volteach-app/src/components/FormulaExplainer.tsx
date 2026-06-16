@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Loader2, Sparkles, AlertCircle } from 'lucide-react';
-import { explainFormula } from '../utils/gemini';
+import { auth } from '../firebase';
 
 interface FormulaExplainerProps {
   formula: { name: string; eq: string } | null;
@@ -10,7 +10,7 @@ interface FormulaExplainerProps {
 export function FormulaExplainer({ formula, onClose }: FormulaExplainerProps) {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<'NO_KEY' | 'ERROR' | null>(null);
+  const [error, setError] = useState<'ERROR' | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const prevFormulaRef = useRef<string>('');
 
@@ -24,12 +24,26 @@ export function FormulaExplainer({ formula, onClose }: FormulaExplainerProps) {
     setError(null);
     setLoading(true);
 
-    explainFormula(formula.name, formula.eq)
+    const explain = async () => {
+      const token = await auth.currentUser?.getIdToken();
+      const res = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          prompt: `אתה מורה להנדסת חשמל. הסבר את הנוסחה הבאה בעברית בצורה קצרה וברורה לסטודנט.\n\nשם הנוסחה: ${formula.name}\nמשוואה: ${formula.eq}\n\nפרמט את התשובה כך — בדיוק בפורמט הזה:\n💡 אינטואיציה: [משפט קצר מה המשוואה מייצגת]\n📐 משתנים: [הסבר קצר של הסמלים]\n🔧 שימוש: [מתי ואיך משתמשים בה]\n🔢 דוגמה: [מספרים קונקרטיים קצרים]\n\nהיה תמציתי — 4 שורות קצרות בסך הכל.`,
+        }),
+      });
+      if (!res.ok) throw new Error('ERROR');
+      const data = await res.json();
+      return data.text ?? 'לא ניתן היה לקבל הסבר.';
+    };
+
+    explain()
       .then(result => setText(result))
-      .catch(err => {
-        if (err.message === 'NO_KEY') setError('NO_KEY');
-        else setError('ERROR');
-      })
+      .catch(() => setError('ERROR'))
       .finally(() => setLoading(false));
   }, [formula]);
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckSquare, Square, ThumbsUp, RefreshCw, ExternalLink, Award, Upload, FileText, Calendar, Link } from 'lucide-react';
-import { Course, Institution } from '../types';
-import { topicKnowledge } from '../data/enrichment';
+import { Course, Institution, TopicKnowledge } from '../types';
 import { collection, query, where, onSnapshot, updateDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { UploadResourceModal } from './Modals';
@@ -28,6 +27,7 @@ export default function MainCourses({
   onOpenExam,
   onOpenTopic
 }: MainCoursesProps) {
+  const [topicKnowledge, setTopicKnowledge] = useState<Record<string, TopicKnowledge>>({});
   const [marathonCourse, setMarathonCourse] = useState<string | null>(null);
   const [completions, setCompletions] = useState<Record<string, boolean>>({});
   const [notebooks, setNotebooks] = useState<Record<string, { notes: string; formulas: string }>>({});
@@ -36,6 +36,10 @@ export default function MainCourses({
   const [resources, setResources] = useState<any[]>([]);
   const [resourcesLoading, setResourcesLoading] = useState(true);
   const [activeUploadCourse, setActiveUploadCourse] = useState<string | null>(null);
+
+  useEffect(() => {
+    import('../data/enrichment').then(m => setTopicKnowledge(m.topicKnowledge));
+  }, []);
 
   // Subscribe to community resources
   useEffect(() => {

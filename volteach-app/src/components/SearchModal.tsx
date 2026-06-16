@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useFocusTrap } from '../utils/useFocusTrap';
 import { Search, X, Landmark, GraduationCap, BookOpen, FlaskConical } from 'lucide-react';
 import { institutions } from '../data/institutions';
 import { coursesData } from '../data/courses';
@@ -110,6 +111,8 @@ export function SearchModal({ isOpen, onClose, onSelectInstitution, onSelectCour
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef, isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -162,6 +165,9 @@ export function SearchModal({ isOpen, onClose, onSelectInstitution, onSelectCour
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="חיפוש"
       className="fixed inset-0 z-[300] flex items-start justify-center pt-[15vh] px-4"
       onClick={onClose}
     >
@@ -170,6 +176,7 @@ export function SearchModal({ isOpen, onClose, onSelectInstitution, onSelectCour
 
       {/* Panel */}
       <div
+        ref={panelRef}
         className="relative w-full max-w-xl bg-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
         onKeyDown={handleKeyDown}

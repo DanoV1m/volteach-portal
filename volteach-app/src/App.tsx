@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { ChevronRight, ChevronLeft, Plus, Check, RefreshCw, Share2, Printer, Trash, X, Cloud, Cpu, Compass, Activity, Landmark, GraduationCap, BookOpen, Zap } from 'lucide-react';
 import { institutions } from './data/institutions';
 import { coursesData } from './data/courses';
@@ -18,7 +18,6 @@ import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import { TermsAgreementModal } from './components/TermsAgreementModal';
-import { loadRemoteConfig } from './utils/fetchConfig';
 
 import { CoursePageSkeleton, FormulasPageSkeleton } from './components/SkeletonUI';
 
@@ -60,6 +59,8 @@ interface ToastMessage {
 }
 
 export default function App() {
+  const appContainerRef = useRef<HTMLDivElement>(null);
+
   // Navigation State
   const [view, setView] = useState<'home' | 'institutions' | 'years' | 'courses' | 'my-formulas'>('home');
   const [selectedType, setSelectedType] = useState<'uni' | 'college' | null>(null);
@@ -93,6 +94,16 @@ export default function App() {
 
   // Daily Toast notifications list
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Snapshot of nav state captured when entering My Formulas view
+  const [prevNavSnapshot, setPrevNavSnapshot] = useState<{
+    view: 'home' | 'institutions' | 'years' | 'courses';
+    selectedType: 'uni' | 'college' | null;
+    selectedInstitutionKey: string | null;
+    selectedYear: number | null;
+    selectedSemester: number | null;
+    selectedTrack: 'regular' | 'spread';
+  } | null>(null);
 
   // Quick formulas state
   const [quickFormulas, setQuickFormulas] = useState<{ id: string; title: string; eq: string }[]>(() => {
@@ -158,7 +169,6 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        loadRemoteConfig();
         try {
           const userRef = doc(db, 'users', firebaseUser.uid);
           const snap = await getDoc(userRef);
@@ -217,6 +227,38 @@ export default function App() {
     };
   }, [user]);
 
+  // Item 12: Restore last course nav from Firestore on first sign-in
+  const navRestoreAttemptedRef = useRef(false);
+  useEffect(() => {
+    if (!user || navRestoreAttemptedRef.current) return;
+    navRestoreAttemptedRef.current = true;
+    getDoc(doc(db, 'users', user.uid, 'progress', 'nav')).then(snap => {
+      if (!snap.exists()) return;
+      const d = snap.data();
+      if (d.institutionKey && d.year && d.semester) {
+        setSelectedType(d.type ?? null);
+        setSelectedInstitutionKey(d.institutionKey);
+        setSelectedYear(d.year);
+        setSelectedSemester(d.semester);
+        setSelectedTrack(d.track ?? 'regular');
+        setView('courses');
+      }
+    }).catch(() => {});
+  }, [user]);
+
+  // Item 12: Save course nav to Firestore when user reaches courses view
+  useEffect(() => {
+    if (!user || view !== 'courses' || !selectedInstitutionKey || !selectedYear || !selectedSemester) return;
+    setDoc(doc(db, 'users', user.uid, 'progress', 'nav'), {
+      institutionKey: selectedInstitutionKey,
+      year: selectedYear,
+      semester: selectedSemester,
+      track: selectedTrack,
+      type: selectedType,
+      savedAt: new Date().toISOString(),
+    }).catch(() => {});
+  }, [user, view, selectedInstitutionKey, selectedYear, selectedSemester, selectedTrack, selectedType]);
+
   // Handle Spotify OAuth callback (?code=... in URL after redirect)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -262,25 +304,26 @@ export default function App() {
     return () => window.removeEventListener('show-toast', handleToastEvent);
   }, []);
 
-  // Sync KaTeX equations on view/tab changes
+  // Sync KaTeX equations — scoped to app container, not document.body
   useEffect(() => {
-    setTimeout(() => {
+    const container = appContainerRef.current;
+    if (!container) return;
+    const frameId = requestAnimationFrame(() => {
       const win = window as any;
       if (win.renderMathInElement) {
         try {
-          win.renderMathInElement(document.body, {
+          win.renderMathInElement(container, {
             delimiters: [
               { left: '$$', right: '$$', display: true },
               { left: '$', right: '$', display: false }
             ],
             throwOnError: false
           });
-        } catch (e) {
-          console.error(e);
-        }
+        } catch { /* noop */ }
       }
-    }, 100);
-  }, [view, openAccordion, bookmarks, isSidebarCollapsed, quickFormulas]);
+    });
+    return () => cancelAnimationFrame(frameId);
+  }, [view, openAccordion, bookmarks, quickFormulas]);
 
   const addToast = (msg: string, type: 'info' | 'error' | 'success') => {
     const id = Date.now().toString() + Math.random().toString();
@@ -552,7 +595,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans antialiased overflow-x-hidden pt-20">
+    <div ref={appContainerRef} className="min-h-screen bg-[#0f172a] text-slate-100 font-sans antialiased overflow-x-hidden pt-20">
       {/* Terms of Service blocking modal for users who haven't accepted yet */}
       {tosAccepted === false && (
         <TermsAgreementModal
@@ -565,7 +608,7 @@ export default function App() {
       )}
       
       {/* GLOBAL TOAST BANNER */}
-      <div className="fixed bottom-6 left-6 z-55 flex flex-col gap-3 pointer-events-none max-w-sm w-full vt-toast-container print:hidden">
+      <div aria-live="polite" role="status" className="fixed bottom-6 left-6 z-55 flex flex-col gap-3 pointer-events-none max-w-sm w-full vt-toast-container print:hidden">
         {toasts.map(t => (
           <div 
             key={t.id} 
@@ -589,6 +632,16 @@ export default function App() {
           setView('home');
         }}
         onOpenMyFormulas={() => {
+          if (view !== 'my-formulas') {
+            setPrevNavSnapshot({
+              view: view as 'home' | 'institutions' | 'years' | 'courses',
+              selectedType,
+              selectedInstitutionKey,
+              selectedYear,
+              selectedSemester,
+              selectedTrack,
+            });
+          }
           setActiveFormulaFolder(null);
           setView('my-formulas');
         }}
@@ -909,7 +962,24 @@ export default function App() {
                     <p className="text-xs text-slate-400 mt-1">נהל, שמור, וייצא את רשימת המשוואות החשמליות שלך.</p>
                   </div>
                   <div className="flex gap-2 self-start sm:self-center">
-                    <button 
+                    {prevNavSnapshot && (
+                      <button
+                        onClick={() => {
+                          setView(prevNavSnapshot.view);
+                          setSelectedType(prevNavSnapshot.selectedType);
+                          setSelectedInstitutionKey(prevNavSnapshot.selectedInstitutionKey);
+                          setSelectedYear(prevNavSnapshot.selectedYear);
+                          setSelectedSemester(prevNavSnapshot.selectedSemester);
+                          setSelectedTrack(prevNavSnapshot.selectedTrack);
+                          setPrevNavSnapshot(null);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 border border-slate-700 py-2.5 px-4 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 hover:text-white"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                        <span>חזור לקורסים</span>
+                      </button>
+                    )}
+                    <button
                       onClick={handleShareFormulas}
                       className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 py-2.5 px-4 text-xs font-bold text-white transition-opacity hover:opacity-95"
                     >

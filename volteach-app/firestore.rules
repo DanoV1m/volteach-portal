@@ -41,6 +41,11 @@ service cloud.firestore {
         && !incoming().diff(existing()).affectedKeys().hasAny(['xp', 'level']);
     }
 
+    // 3a. User navigation progress — "continue where you left off"
+    match /users/{userId}/progress/{docId} {
+      allow read, write: if isOwner(userId) && isValidId(userId);
+    }
+
     // 3. User saved formulas subcollection
     match /users/{userId}/formulas/{formulaId} {
       allow list: if isOwner(userId);
@@ -57,10 +62,9 @@ service cloud.firestore {
         && incoming().createdAt == existing().createdAt;
     }
 
-    // 4. App config (API keys) — read by any signed-in user, write by admin only
+    // 4. App config (API keys) — admin only, never readable by regular users
     match /config/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && request.auth.token.email == 'vimidan99@gmail.com';
+      allow read, write: if isSignedIn() && request.auth.token.email == 'vimidan99@gmail.com';
     }
 
     // 5. Community Shared Resources
@@ -79,7 +83,8 @@ service cloud.firestore {
         && incoming().upvotes == existing().upvotes + 1
         && incoming().upvotedBy.hasAll(existing().upvotedBy)
         && incoming().upvotedBy.size() == existing().upvotedBy.size() + 1
-        && request.auth.uid in incoming().upvotedBy;
+        && request.auth.uid in incoming().upvotedBy
+        && !(request.auth.uid in existing().upvotedBy);
     }
   }
 }

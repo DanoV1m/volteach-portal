@@ -1,14 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useFocusTrap } from '../utils/useFocusTrap';
 import { X, Send, Award, Clock, HelpCircle, Loader2 } from 'lucide-react';
 import { CourseEnrichment, Institution, TopicKnowledge } from '../types';
-import { courseEnrichment, topicKnowledge } from '../data/enrichment';
 import { PhysicsSimulation } from './PhysicsSimulation';
 
-// Shared backend caller for all Gemini API calls
+import { auth } from '../firebase';
+
+// Lazy-loaded enrichment data — keeps the 479KB dataset in its own Vite chunk
+type EnrichmentMod = {
+  courseEnrichment: Record<string, CourseEnrichment>;
+  topicKnowledge: Record<string, TopicKnowledge>;
+};
+let _enrichmentCache: EnrichmentMod | null = null;
+function loadEnrichment(): Promise<EnrichmentMod> {
+  if (_enrichmentCache) return Promise.resolve(_enrichmentCache);
+  return import('../data/enrichment').then(m => { _enrichmentCache = m as EnrichmentMod; return _enrichmentCache; });
+}
+
+// Shared backend caller for all Gemini API calls — sends Firebase ID token for server-side auth
 const queryBackend = async (promptMsg: string): Promise<string> => {
+  const token = await auth.currentUser?.getIdToken();
   const res = await fetch("/api/gemini", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({ prompt: promptMsg }),
   });
   if (!res.ok) {
@@ -41,6 +58,9 @@ export function ContactModal({ isOpen, onClose, institutionsList, initialInstKey
     if (initialInstKey) setInst(initialInstKey);
   }, [initialInstKey, isOpen]);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, isOpen);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -65,8 +85,8 @@ export function ContactModal({ isOpen, onClose, institutionsList, initialInstKey
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900 p-6 md:p-8 text-right shadow-2xl">
+    <div role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div ref={dialogRef} className="relative w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900 p-6 md:p-8 text-right shadow-2xl">
         <button onClick={handleClose} className="absolute left-4 top-4 rounded-xl border border-slate-800 bg-slate-950 p-2 text-slate-400 hover:bg-slate-900 hover:text-white">
           <X className="h-4.5 w-4.5" />
         </button>
@@ -74,7 +94,7 @@ export function ContactModal({ isOpen, onClose, institutionsList, initialInstKey
         {!success ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <h3 id="contact-modal-title" className="text-xl font-bold text-white flex items-center gap-2">
                 <span>✉️</span> צור קשר
               </h3>
               <p className="text-xs text-slate-400 mt-1">מצאת טעות בסילבוס? בעיה בדרייב? נשמח לשמוע ממך!</p>
@@ -144,12 +164,16 @@ interface EnrichmentModalProps {
 }
 
 export function EnrichmentModal({ isOpen, onClose, courseTitle }: EnrichmentModalProps) {
+  const [enrichmentMod, setEnrichmentMod] = useState<EnrichmentMod | null>(null);
+  useEffect(() => { if (isOpen) loadEnrichment().then(setEnrichmentMod); }, [isOpen]);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, isOpen);
   if (!isOpen) return null;
-  const data = courseEnrichment[courseTitle];
+  const data = enrichmentMod?.courseEnrichment[courseTitle];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md">
-      <div className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl text-right">
+    <div role="dialog" aria-modal="true" aria-labelledby="enrichment-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md">
+      <div ref={dialogRef} className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl text-right">
         {/* CLOSE BUTTON */}
         <button onClick={onClose} className="absolute left-4 top-4 z-10 rounded-xl border border-slate-700/50 bg-black/40 p-2 text-white hover:bg-black/60">
           <X className="h-4.5 w-4.5" />
@@ -158,7 +182,7 @@ export function EnrichmentModal({ isOpen, onClose, courseTitle }: EnrichmentModa
         {/* TOP HERO */}
         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-8 pt-10">
           <span className="text-5xl">📚</span>
-          <h3 className="text-xl sm:text-2xl font-black text-white mt-3">{courseTitle}</h3>
+          <h3 id="enrichment-modal-title" className="text-xl sm:text-2xl font-black text-white mt-3">{courseTitle}</h3>
           <p className="text-xs sm:text-sm text-white/80 mt-1">תוכן לימודי מקצועי, נושאים וסרטוני העשרה לתרגול ופתרון</p>
         </div>
 
@@ -251,14 +275,16 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
   const [checkingAnswer, setCheckingAnswer] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, isOpen);
 
-  const loadLocalQuestions = () => {
+  const loadLocalQuestions = async () => {
     setSubmitted(false);
     setAnswers({});
     setGrading(null);
     setIsAiMode(false);
-    
-    // Find relevant topics in static base
+
+    const { topicKnowledge } = await loadEnrichment();
     const topicsWithQuizzes = Object.keys(topicKnowledge).filter(
       t => topicKnowledge[t] && topicKnowledge[t].quizQuestion
     );
@@ -425,8 +451,8 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-      <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl text-right">
+    <div role="dialog" aria-modal="true" aria-labelledby="exam-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+      <div ref={dialogRef} className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl text-right">
         {/* CLOSE CONTROL */}
         <button onClick={handleClose} className="absolute left-4 top-4 z-10 rounded-xl border border-slate-700 bg-slate-950 p-2 text-slate-400 hover:bg-slate-900 hover:text-white">
           <X className="h-4.5 w-4.5" />
@@ -437,7 +463,7 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
             <div className="inline-block rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold text-red-200">
               {isAiMode ? "🤖 שאלות ג'ונרטו ב-Vibe של Gemini" : "📚 שאלות מאגר קלאסיות"}
             </div>
-            <h3 className="text-xl sm:text-2xl font-black mt-1.5">סימולציית בחינה אקדמית</h3>
+            <h3 id="exam-modal-title" className="text-xl sm:text-2xl font-black mt-1.5">סימולציית בחינה אקדמית</h3>
             <p className="text-xs sm:text-sm text-white/80 mt-1">{courseTitle} - פתור ללא סרגל כלים, מדמה תנאי אולפן בבחינה</p>
           </div>
           <div className="flex items-center gap-3 self-center rounded-2xl bg-black/20 p-4 px-6 text-center shadow-inner font-mono text-xl font-bold tracking-wider text-rose-200">
@@ -591,6 +617,8 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
   const [checkingAnswer, setCheckingAnswer] = useState(false);
   const [quizDifficulty, setQuizDifficulty] = useState<'exam' | 'theory' | 'numerical' | 'conceptual'>('exam');
 
+  const [staticKnowledge, setStaticKnowledge] = useState<TopicKnowledge | null>(null);
+
   useEffect(() => {
     if (isOpen) {
       setActiveTab('explain');
@@ -599,10 +627,14 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
       setQuizAnswer('');
       setUserSolution('');
       setGrading(null);
+      loadEnrichment().then(mod => setStaticKnowledge(mod.topicKnowledge[topicName] ?? null));
     }
   }, [isOpen, topicName]);
 
-  const activeKnowledge = customKnowledge || topicKnowledge[topicName];
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, isOpen);
+
+  const activeKnowledge = customKnowledge || staticKnowledge;
 
   const handleGenerateLive = async () => {
     setLoading(true);
@@ -732,8 +764,8 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-      <div className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl border border-indigo-500/20 bg-slate-900 shadow-2xl shadow-indigo-500/5 text-right">
+    <div role="dialog" aria-modal="true" aria-labelledby="ai-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+      <div ref={dialogRef} className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl border border-indigo-500/20 bg-slate-900 shadow-2xl shadow-indigo-500/5 text-right">
         {/* CLOSE BUTTON */}
         <button onClick={onClose} className="absolute left-4 top-4 z-10 rounded-xl border border-slate-700 bg-slate-950 p-2 text-slate-400 hover:bg-slate-900 hover:text-white">
           <X className="h-4.5 w-4.5" />
@@ -744,7 +776,7 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
           <div className="inline-block rounded-full bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 text-[11px] font-bold text-indigo-300">
             📚 {courseTitle}
           </div>
-          <h3 className="text-xl sm:text-2xl font-black text-white mt-2">{topicName}</h3>
+          <h3 id="ai-modal-title" className="text-xl sm:text-2xl font-black text-white mt-2">{topicName}</h3>
           <p className="text-xs text-indigo-300/80 mt-1">עוזר למידה ותירגול הנדסי מותאם AI בזמן אמת</p>
         </div>
 
@@ -981,6 +1013,9 @@ export function UploadResourceModal({ isOpen, onClose, institution, courseTitle,
   const [link, setLink] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, isOpen);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -997,17 +1032,19 @@ export function UploadResourceModal({ isOpen, onClose, institution, courseTitle,
 
     setLoading(true);
     try {
-      const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+      const { collection, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
       const { db } = await import('../firebase');
-      
-      await addDoc(collection(db, 'community_resources'), {
+
+      const newRef = doc(collection(db, 'community_resources'));
+      await setDoc(newRef, {
+        id: newRef.id,
         title,
         category,
         webViewLink: link,
         institutionKey: institution.key,
         courseTitle,
         contributorName: user.displayName || 'סטודנט',
-        contributorId: user.uid,
+        contributorUid: user.uid,
         upvotes: 0,
         upvotedBy: [],
         createdAt: serverTimestamp()
@@ -1024,15 +1061,15 @@ export function UploadResourceModal({ isOpen, onClose, institution, courseTitle,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 md:p-8 text-right shadow-2xl">
+    <div role="dialog" aria-modal="true" aria-labelledby="upload-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div ref={dialogRef} className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 md:p-8 text-right shadow-2xl">
         <button onClick={onClose} className="absolute left-4 top-4 rounded-xl border border-slate-800 bg-slate-950 p-2 text-slate-400 hover:bg-slate-900 hover:text-white">
           <X className="h-4.5 w-4.5" />
         </button>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <h3 id="upload-modal-title" className="text-xl font-bold text-white flex items-center gap-2">
               <span>📤</span> שיתוף חומר לימוד
             </h3>
             <p className="text-xs text-slate-400 mt-1">שתף סיכומים, תרגילים ומבחנים עם חבריך לקורס {courseTitle}.</p>
