@@ -6,7 +6,8 @@ import { FormulaBookmark } from './types';
 import MainHeader from './components/MainHeader';
 import { sanitizeFormulaInput } from './utils/security';
 import MusicPlayer from './components/MusicPlayer';
-import { handleSpotifyCallback } from './utils/spotify';
+import { useSpotifyAuth } from './utils/useSpotifyAuth';
+import { useKatexRender } from './utils/useKatexRender';
 import { SearchModal } from './components/SearchModal';
 import { FormulaQuiz } from './components/FormulaQuiz';
 import { FormulaExplainer } from './components/FormulaExplainer';
@@ -95,15 +96,7 @@ export default function App() {
   // Daily Toast notifications list
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Snapshot of nav state captured when entering My Formulas view
-  const [prevNavSnapshot, setPrevNavSnapshot] = useState<{
-    view: 'home' | 'institutions' | 'years' | 'courses';
-    selectedType: 'uni' | 'college' | null;
-    selectedInstitutionKey: string | null;
-    selectedYear: number | null;
-    selectedSemester: number | null;
-    selectedTrack: 'regular' | 'spread';
-  } | null>(null);
+  const prevViewRef = useRef<'home' | 'institutions' | 'years' | 'courses'>('home');
 
   // Quick formulas state
   const [quickFormulas, setQuickFormulas] = useState<{ id: string; title: string; eq: string }[]>(() => {
@@ -259,26 +252,7 @@ export default function App() {
     }).catch(() => {});
   }, [user, view, selectedInstitutionKey, selectedYear, selectedSemester, selectedTrack, selectedType]);
 
-  // Handle Spotify OAuth callback (?code=... in URL after redirect)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const error = params.get('error');
-    if (error) {
-      window.history.replaceState({}, '', window.location.pathname);
-      return;
-    }
-    if (code) {
-      window.history.replaceState({}, '', window.location.pathname);
-      handleSpotifyCallback(code)
-        .then(() => {
-          addToast('חוברת בהצלחה ל-Spotify! 🎵', 'success');
-          window.dispatchEvent(new CustomEvent('spotify-connected'));
-        })
-        .catch(() => addToast('שגיאה בהתחברות ל-Spotify', 'error'));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useSpotifyAuth();
 
   // Global Ctrl+K search shortcut
   useEffect(() => {
@@ -304,26 +278,7 @@ export default function App() {
     return () => window.removeEventListener('show-toast', handleToastEvent);
   }, []);
 
-  // Sync KaTeX equations — scoped to app container, not document.body
-  useEffect(() => {
-    const container = appContainerRef.current;
-    if (!container) return;
-    const frameId = requestAnimationFrame(() => {
-      const win = window as any;
-      if (win.renderMathInElement) {
-        try {
-          win.renderMathInElement(container, {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false }
-            ],
-            throwOnError: false
-          });
-        } catch { /* noop */ }
-      }
-    });
-    return () => cancelAnimationFrame(frameId);
-  }, [view, openAccordion, bookmarks, quickFormulas]);
+  useKatexRender(appContainerRef, [view, openAccordion, bookmarks, quickFormulas]);
 
   const addToast = (msg: string, type: 'info' | 'error' | 'success') => {
     const id = Date.now().toString() + Math.random().toString();
@@ -633,14 +588,7 @@ export default function App() {
         }}
         onOpenMyFormulas={() => {
           if (view !== 'my-formulas') {
-            setPrevNavSnapshot({
-              view: view as 'home' | 'institutions' | 'years' | 'courses',
-              selectedType,
-              selectedInstitutionKey,
-              selectedYear,
-              selectedSemester,
-              selectedTrack,
-            });
+            prevViewRef.current = view as 'home' | 'institutions' | 'years' | 'courses';
           }
           setActiveFormulaFolder(null);
           setView('my-formulas');
@@ -962,17 +910,9 @@ export default function App() {
                     <p className="text-xs text-slate-400 mt-1">נהל, שמור, וייצא את רשימת המשוואות החשמליות שלך.</p>
                   </div>
                   <div className="flex gap-2 self-start sm:self-center">
-                    {prevNavSnapshot && (
+                    {prevViewRef.current === 'courses' && (
                       <button
-                        onClick={() => {
-                          setView(prevNavSnapshot.view);
-                          setSelectedType(prevNavSnapshot.selectedType);
-                          setSelectedInstitutionKey(prevNavSnapshot.selectedInstitutionKey);
-                          setSelectedYear(prevNavSnapshot.selectedYear);
-                          setSelectedSemester(prevNavSnapshot.selectedSemester);
-                          setSelectedTrack(prevNavSnapshot.selectedTrack);
-                          setPrevNavSnapshot(null);
-                        }}
+                        onClick={() => setView('courses')}
                         className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 border border-slate-700 py-2.5 px-4 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 hover:text-white"
                       >
                         <ChevronRight className="h-4 w-4" />
@@ -1089,7 +1029,6 @@ export default function App() {
                 VOLTEACH © {new Date().getFullYear()} — כל הזכויות שמורות
               </p>
               <div className="mt-3 flex items-center justify-center gap-4 text-xs">
-                <button onClick={() => { setLegalType('terms'); setIsLegalOpen(true); }} className="hover:text-indigo-400 hover:underline transition-colors">תנאי שימוש (TOS)</button>
                 <button onClick={() => { setLegalType('privacy'); setIsLegalOpen(true); }} className="hover:text-emerald-400 hover:underline transition-colors">מדיניות פרטיות</button>
               </div>
             </footer>

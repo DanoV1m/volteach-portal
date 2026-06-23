@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useKatexRender } from '../utils/useKatexRender';
 import { X, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { auth } from '../firebase';
 
@@ -47,22 +48,10 @@ export function FormulaExplainer({ formula, onClose }: FormulaExplainerProps) {
       .finally(() => setLoading(false));
   }, [formula]);
 
-  // Render KaTeX after text loads
-  useEffect(() => {
-    if (!text || !containerRef.current) return;
-    const win = window as unknown as { renderMathInElement?: (el: Element, opts: unknown) => void };
-    if (win.renderMathInElement) {
-      try {
-        win.renderMathInElement(containerRef.current, {
-          delimiters: [
-            { left: '$$', right: '$$', display: false },
-            { left: '$', right: '$', display: false },
-          ],
-          throwOnError: false,
-        });
-      } catch { /* noop */ }
-    }
-  }, [text]);
+  useKatexRender(containerRef, [text], [
+    { left: '$$', right: '$$', display: false },
+    { left: '$', right: '$', display: false },
+  ]);
 
   if (!formula) return null;
 

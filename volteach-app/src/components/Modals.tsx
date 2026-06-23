@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useKatexRender } from '../utils/useKatexRender';
 import { useFocusTrap } from '../utils/useFocusTrap';
 import { X, Send, Award, Clock, HelpCircle, Loader2 } from 'lucide-react';
 import { CourseEnrichment, Institution, TopicKnowledge } from '../types';
@@ -276,6 +277,7 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const examBodyRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, isOpen);
 
   const loadLocalQuestions = async () => {
@@ -377,26 +379,7 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
     };
   }, [isOpen, courseTitle]);
 
-  // Render Math in ExamModal
-  useEffect(() => {
-    setTimeout(() => {
-      const container = document.getElementById('examModalBody');
-      const win = window as any;
-      if (container && win.renderMathInElement) {
-        try {
-          win.renderMathInElement(container, {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false }
-            ],
-            throwOnError: false
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }, 150);
-  }, [questions, submitted, isOpen, loading, grading]);
+  useKatexRender(examBodyRef, [questions, submitted, isOpen, loading, grading]);
 
   if (!isOpen) return null;
 
@@ -472,7 +455,7 @@ export function ExamModal({ isOpen, onClose, courseTitle }: ExamModalProps) {
           </div>
         </div>
 
-        <div id="examModalBody" className="p-6 md:p-8 space-y-6">
+        <div id="examModalBody" ref={examBodyRef} className="p-6 md:p-8 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-950/60 p-4 rounded-2xl border border-slate-850 gap-3">
             <div className="text-right">
               <span className="text-xs text-slate-400 font-bold block">סגנון מבחן נוכחי:</span>
@@ -632,6 +615,7 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
   }, [isOpen, topicName]);
 
   const dialogRef = useRef<HTMLDivElement>(null);
+  const aiBodyRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, isOpen);
 
   const activeKnowledge = customKnowledge || staticKnowledge;
@@ -740,26 +724,7 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
     }
   };
 
-  // Render Math whenever component state adjustments occur
-  useEffect(() => {
-    setTimeout(() => {
-      const container = document.getElementById('aiModalBody');
-      const win = window as any;
-      if (container && win.renderMathInElement) {
-        try {
-          win.renderMathInElement(container, {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false }
-            ],
-            throwOnError: false
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }, 150);
-  }, [activeTab, activeKnowledge, quizQuestion, grading, isOpen]);
+  useKatexRender(aiBodyRef, [activeTab, activeKnowledge, quizQuestion, grading, isOpen]);
 
   if (!isOpen) return null;
 
@@ -819,7 +784,7 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
         </div>
 
         {/* BODY PANEL */}
-        <div id="aiModalBody" className="p-6 md:p-8 space-y-6">
+        <div id="aiModalBody" ref={aiBodyRef} className="p-6 md:p-8 space-y-6">
           {activeTab === 'simulation' ? (
              <PhysicsSimulation courseTitle={courseTitle} topicName={topicName} />
           ) : loading ? (

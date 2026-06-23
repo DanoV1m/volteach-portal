@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useKatexRender } from '../utils/useKatexRender';
 import { ArrowLeft, CheckSquare, Square, ThumbsUp, RefreshCw, ExternalLink, Award, Upload, FileText, Calendar, Link } from 'lucide-react';
 import { Course, Institution, TopicKnowledge } from '../types';
 import { collection, query, where, onSnapshot, updateDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
@@ -32,6 +33,7 @@ export default function MainCourses({
   const [completions, setCompletions] = useState<Record<string, boolean>>({});
   const [notebooks, setNotebooks] = useState<Record<string, { notes: string; formulas: string }>>({});
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
+  const coursesContainerRef = useRef<HTMLDivElement>(null);
 
   const [resources, setResources] = useState<any[]>([]);
   const [resourcesLoading, setResourcesLoading] = useState(true);
@@ -177,25 +179,7 @@ export default function MainCourses({
 
   const { pct, completed, total } = getProgressStats();
 
-  // Render Math whenever component state adjustments occur
-  useEffect(() => {
-    setTimeout(() => {
-      const win = window as any;
-      if (win.renderMathInElement) {
-        try {
-          win.renderMathInElement(document.getElementById('coursesContainer'), {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false }
-            ],
-            throwOnError: false
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }, 100);
-  }, [coursesList, marathonCourse, completions, notebooks, flippedCards]);
+  useKatexRender(coursesContainerRef, [coursesList, marathonCourse, completions, notebooks, flippedCards]);
 
   const toggleMarathon = (courseTitle: string) => {
     setMarathonCourse(prev => (prev === courseTitle ? null : courseTitle));
@@ -249,7 +233,7 @@ export default function MainCourses({
       </div>
 
       {/* COURSES ITERATIVE LIST */}
-      <div id="coursesContainer" className="mx-auto max-w-5xl space-y-12 mb-16">
+      <div id="coursesContainer" ref={coursesContainerRef} className="mx-auto max-w-5xl space-y-12 mb-16">
         {coursesList.length === 0 ? (
           <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-12 text-center text-slate-400">
             <div className="text-4xl">📚</div>

@@ -21,14 +21,6 @@ const CURATED = [
     provider: 'spotify' as const,
   },
   {
-    label: 'Chillhop',
-    emoji: '☕',
-    color: 'from-amber-500 to-orange-600',
-    src: 'https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/chillhopdotcom&color=%23a855f7&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false',
-    height: 165,
-    provider: 'soundcloud' as const,
-  },
-  {
     label: 'Classical',
     emoji: '🎼',
     color: 'from-emerald-500 to-teal-600',

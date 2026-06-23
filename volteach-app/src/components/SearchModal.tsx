@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useKatexRender } from '../utils/useKatexRender';
 import { useFocusTrap } from '../utils/useFocusTrap';
 import { Search, X, Landmark, GraduationCap, BookOpen, FlaskConical } from 'lucide-react';
 import { institutions } from '../data/institutions';
@@ -129,19 +130,7 @@ export function SearchModal({ isOpen, onClose, onSelectInstitution, onSelectCour
     setActiveIdx(0);
   }, [query]);
 
-  // Render KaTeX in results
-  useEffect(() => {
-    if (!results.length) return;
-    const win = window as unknown as { renderMathInElement?: (el: Element, opts: unknown) => void };
-    if (win.renderMathInElement && listRef.current) {
-      try {
-        win.renderMathInElement(listRef.current, {
-          delimiters: [{ left: '$$', right: '$$', display: false }],
-          throwOnError: false,
-        });
-      } catch { /* noop */ }
-    }
-  }, [results]);
+  useKatexRender(listRef, [results], [{ left: '$$', right: '$$', display: false }]);
 
   const handleSelect = useCallback((result: SearchResult) => {
     if (result.kind === 'institution') {

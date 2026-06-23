@@ -25,10 +25,6 @@ export const subscribeVitals = (cb: () => void): (() => void) => {
 
 export const getVitalsSnapshot = (): VitalEntry[] => cachedSnapshot;
 
-function formatValue(name: string, value: number): string {
-  return UNITS[name] === 'ms' ? `${Math.round(value)} ms` : value.toFixed(3);
-}
-
 function onMetric(metric: Metric): void {
   const entry: VitalEntry = {
     name: metric.name,
@@ -49,7 +45,7 @@ function onMetric(metric: Metric): void {
       metric.rating === 'good' ? '✅' :
       metric.rating === 'needs-improvement' ? '⚠️' : '❌';
     console.log(
-      `%c[Web Vitals] %c${metric.name}%c  ${formatValue(metric.name, metric.value)}  ${badge}`,
+      `%c[Web Vitals] %c${metric.name}%c  ${UNITS[metric.name] === 'ms' ? `${Math.round(metric.value)} ms` : metric.value.toFixed(3)}  ${badge}`,
       'color:#6366f1;font-weight:bold',
       `color:${color};font-weight:bold;font-size:13px`,
       'color:#94a3b8',

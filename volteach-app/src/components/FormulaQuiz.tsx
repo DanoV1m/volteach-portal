@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useKatexRender } from '../utils/useKatexRender';
 import { X, ChevronRight, ChevronLeft, RotateCcw, Check, BookOpen } from 'lucide-react';
 import { formulasSheets } from '../data/formulas';
 
@@ -23,18 +24,6 @@ function buildDeck(categoryId: string): Card[] {
   return cards.sort(() => Math.random() - 0.5);
 }
 
-function renderKatex(el: HTMLElement | null) {
-  if (!el) return;
-  const win = window as unknown as { renderMathInElement?: (el: Element, opts: unknown) => void };
-  if (win.renderMathInElement) {
-    try {
-      win.renderMathInElement(el, {
-        delimiters: [{ left: '$$', right: '$$', display: true }],
-        throwOnError: false,
-      });
-    } catch { /* noop */ }
-  }
-}
 
 interface FormulaQuizProps {
   isOpen: boolean;
@@ -64,11 +53,7 @@ export function FormulaQuiz({ isOpen, onClose }: FormulaQuizProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  useEffect(() => {
-    if (revealed) {
-      setTimeout(() => renderKatex(cardRef.current), 50);
-    }
-  }, [revealed, idx]);
+  useKatexRender(cardRef, [revealed, idx], [{ left: '$$', right: '$$', display: true }]);
 
   const handleCategory = (catId: string) => {
     setCategoryId(catId);
