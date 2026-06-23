@@ -31,3 +31,4 @@ firebase-debug.log
 admin_database/
 
 .vercel
+.env*

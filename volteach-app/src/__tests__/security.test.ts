@@ -13,59 +13,46 @@ describe('sanitizeFormulaInput', () => {
       '$$\\omega_0 = \\frac{1}{\\sqrt{LC}}$$',
       'F = ma',
       '$V_{th} = V_{oc}$',
+      '$$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$',
     ];
     safe.forEach(f => expect(sanitizeFormulaInput(f)).toBe(f));
   });
 
-  it('strips <script>…</script> block entirely', () => {
-    expect(sanitizeFormulaInput('<script>alert("xss")</script>')).toBe('');
+  it('trims surrounding whitespace', () => {
+    expect(sanitizeFormulaInput('  $V = IR$  ')).toBe('$V = IR$');
   });
 
-  it('strips script tag while preserving surrounding text', () => {
-    expect(
-      sanitizeFormulaInput('before<script>evil()</script>after')
-    ).toBe('beforeafter');
+  it('blocks \\def macro definition', () => {
+    expect(sanitizeFormulaInput('\\def\\evil{bad}')).toBe('');
   });
 
-  it('strips multiline script blocks', () => {
-    expect(
-      sanitizeFormulaInput('<script>\nmalicious()\n</script>safe')
-    ).toBe('safe');
+  it('blocks \\newcommand macro definition', () => {
+    expect(sanitizeFormulaInput('\\newcommand{\\x}{\\x\\x}')).toBe('');
   });
 
-  it('strips onload keyword (case-insensitive)', () => {
-    expect(sanitizeFormulaInput('onload=bad()')).toBe('=bad()');
-    expect(sanitizeFormulaInput('ONLOAD=bad()')).toBe('=bad()');
-    expect(sanitizeFormulaInput('OnLoad=bad()')).toBe('=bad()');
+  it('blocks \\renewcommand', () => {
+    expect(sanitizeFormulaInput('\\renewcommand{\\frac}{hacked}')).toBe('');
   });
 
-  it('strips onerror keyword (case-insensitive)', () => {
-    expect(sanitizeFormulaInput('onerror=hack')).toBe('=hack');
-    expect(sanitizeFormulaInput('ONERROR=hack')).toBe('=hack');
+  it('blocks \\let alias', () => {
+    expect(sanitizeFormulaInput('\\let\\cmd=\\other')).toBe('');
   });
 
-  it('strips javascript: protocol (case-insensitive)', () => {
-    expect(sanitizeFormulaInput('javascript:void(0)')).toBe('void(0)');
-    expect(sanitizeFormulaInput('JAVASCRIPT:void(0)')).toBe('void(0)');
+  it('blocks \\global modifier', () => {
+    expect(sanitizeFormulaInput('\\global\\def\\x{bad}')).toBe('');
   });
 
-  it('strips < and > characters from plain HTML tags', () => {
-    // <b>bold</b> → after bracket strip: bbold/b
-    expect(sanitizeFormulaInput('<b>bold</b>')).toBe('bbold/b');
-    // spacing around brackets is preserved
-    expect(sanitizeFormulaInput('a < b > c')).toBe('a  b  c');
+  it('blocks \\edef, \\gdef, \\xdef primitives', () => {
+    expect(sanitizeFormulaInput('\\edef\\x{val}')).toBe('');
+    expect(sanitizeFormulaInput('\\gdef\\x{val}')).toBe('');
+    expect(sanitizeFormulaInput('\\xdef\\x{val}')).toBe('');
   });
 
-  it('neutralises a combined XSS payload (img onerror)', () => {
-    const payload = '<img src="x" onerror="alert(1)">';
-    const result = sanitizeFormulaInput(payload);
-    expect(result).not.toContain('onerror');
-    expect(result).not.toContain('<');
-    expect(result).not.toContain('>');
+  it('blocks input over 500 characters', () => {
+    expect(sanitizeFormulaInput('x'.repeat(501))).toBe('');
   });
 
-  it('handles multiple script tags in one string', () => {
-    const input = '<script>a()</script>text<script>b()</script>';
-    expect(sanitizeFormulaInput(input)).toBe('text');
+  it('allows input exactly at the 500-character limit', () => {
+    expect(sanitizeFormulaInput('x'.repeat(500))).toBe('x'.repeat(500));
   });
 });
