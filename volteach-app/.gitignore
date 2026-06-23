@@ -29,3 +29,5 @@ firebase-debug.log
 
 # Admin exports — contain user PII
 admin_database/
+
+.vercel

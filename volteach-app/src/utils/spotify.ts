@@ -12,7 +12,7 @@ function getRedirectUri(): string {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return 'http://127.0.0.1:3000';
   }
-  return 'https://volteach-portal.web.app';
+  return window.location.origin;
 }
 
 // ── PKCE helpers ──────────────────────────────────────────────────────────────
