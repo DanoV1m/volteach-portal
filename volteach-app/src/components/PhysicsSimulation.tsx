@@ -51,7 +51,7 @@ function computeSamples(t: number, p: SimParams): [number[], number[], number[]]
     } else {
       a[i] = Math.sin(2 * Math.PI * p.freq1 * x - SPEED * t);
       b[i] = Math.sin(2 * Math.PI * p.freq2 * x - SPEED * 0.8 * t + p.phase);
-      r[i] = (a[i] + b[i]) / 2;
+      r[i] = (a[i]! + b[i]!) / 2;
     }
   }
   return [a, b, r];

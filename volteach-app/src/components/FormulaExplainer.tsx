@@ -86,18 +86,6 @@ export function FormulaExplainer({ formula, onClose }: FormulaExplainerProps) {
             </div>
           )}
 
-          {error === 'NO_KEY' && (
-            <div className="flex items-start gap-2 py-2">
-              <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-              <div className="text-right">
-                <p className="text-xs font-bold text-amber-400">שירות AI בהגדרה</p>
-                <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
-                  הסברי נוסחאות יהיו זמינים בקרוב. אם הבעיה נמשכת, פנה למנהל האתר.
-                </p>
-              </div>
-            </div>
-          )}
-
           {error === 'ERROR' && (
             <div className="flex items-center gap-2 py-2">
               <AlertCircle className="h-4 w-4 text-red-400" />

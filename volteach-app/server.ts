@@ -80,27 +80,6 @@ async function startServer() {
     }
   });
 
-  // Collect Web Vitals from production clients (sendBeacon payload)
-  app.post('/api/vitals', (req, res) => {
-    const { name, value, rating, path: urlPath } = req.body as {
-      name?: string;
-      value?: number;
-      rating?: string;
-      path?: string;
-    };
-    if (name && value !== undefined) {
-      const badge =
-        rating === 'good' ? '✅' :
-        rating === 'needs-improvement' ? '⚠️' : '❌';
-      const display =
-        name === 'CLS'
-          ? (value as number).toFixed(3)
-          : `${Math.round(value as number)}ms`;
-      console.log(`[Vitals] ${badge} ${name}: ${display}  path=${urlPath ?? '/'}`);
-    }
-    res.status(204).end();
-  });
-
   // Vite integration
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
