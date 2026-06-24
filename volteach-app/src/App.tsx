@@ -9,6 +9,7 @@ import MusicPlayer from './components/MusicPlayer';
 import { useSpotifyAuth } from './utils/useSpotifyAuth';
 import { useKatexRender } from './utils/useKatexRender';
 import { formulasSheets } from './data/formulas';
+import { ls } from './utils/storage';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
@@ -266,6 +267,42 @@ export default function App() {
       savedAt: new Date().toISOString(),
     }).catch(() => {});
   }, [user, view, selectedInstitutionKey, selectedYear, selectedSemester, selectedTrack, selectedType]);
+
+  // Guest nav restore — mirrors the Firestore path above for unauthenticated users.
+  // Runs once after auth resolves to null (confirmed guest, not mid-loading).
+  const guestNavRestoredRef = useRef(false);
+  useEffect(() => {
+    if (authLoading || user || guestNavRestoredRef.current) return;
+    guestNavRestoredRef.current = true;
+    type GuestNav = {
+      type: 'uni' | 'college' | null;
+      institutionKey: string;
+      year: number;
+      semester: number;
+      track: 'regular' | 'spread';
+    };
+    const saved = ls.get<GuestNav>('vt_guest_nav');
+    if (saved?.institutionKey && saved.year && saved.semester) {
+      setSelectedType(saved.type);
+      setSelectedInstitutionKey(saved.institutionKey);
+      setSelectedYear(saved.year);
+      setSelectedSemester(saved.semester);
+      setSelectedTrack(saved.track ?? 'regular');
+      setView('courses');
+    }
+  }, [authLoading, user]);
+
+  // Guest nav save — only when not logged in and a full course nav is active.
+  useEffect(() => {
+    if (user || view !== 'courses' || !selectedInstitutionKey || !selectedYear || !selectedSemester) return;
+    ls.set('vt_guest_nav', {
+      type: selectedType,
+      institutionKey: selectedInstitutionKey,
+      year: selectedYear,
+      semester: selectedSemester,
+      track: selectedTrack,
+    });
+  }, [user, view, selectedType, selectedInstitutionKey, selectedYear, selectedSemester, selectedTrack]);
 
   useSpotifyAuth();
 
