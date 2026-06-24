@@ -312,7 +312,7 @@ export default function MainCourses({
                                   </div>
                                 </div>
                                 {kb && kb.formula && (
-                                  <div className="mt-2 text-center text-xs text-slate-100 font-mono bg-slate-950/40 py-1 rounded direction-ltr">
+                                  <div className="mt-2 text-center text-xs text-slate-100 font-mono bg-slate-950/40 py-1 rounded direction-ltr" dir="ltr">
                                     {`$$${kb.formula}$$`}
                                   </div>
                                 )}
@@ -493,7 +493,7 @@ export default function MainCourses({
 
                       {/* LIVE MATH PREVIEW WINDOW */}
                       {nb.formulas && (
-                        <div className="rounded-xl border border-slate-800 bg-slate-900/20 p-3.5 text-center text-xs text-emerald-400 whitespace-preword direction-ltr">
+                        <div className="rounded-xl border border-slate-800 bg-slate-900/20 p-3.5 text-center text-xs text-emerald-400 whitespace-preword direction-ltr" dir="ltr">
                           {nb.formulas.includes('$') ? nb.formulas : `$$${nb.formulas}$$`}
                         </div>
                       )}

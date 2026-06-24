@@ -211,7 +211,7 @@ export default function SignIn({ onSuccess }: SignInProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@technion.ac.il"
-                className="w-full rounded-xl border border-slate-800 bg-slate-900/60 p-3 pr-10 text-xs text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none direction-ltr text-right"
+                className="w-full rounded-xl border border-slate-800 bg-slate-900/60 p-3 pr-10 text-xs text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none direction-ltr"
               />
             </div>
           </div>
@@ -244,7 +244,7 @@ export default function SignIn({ onSuccess }: SignInProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900/60 p-3 pr-10 text-xs text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none direction-ltr text-right"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900/60 p-3 pr-10 text-xs text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none direction-ltr"
                 />
               </div>
             </div>

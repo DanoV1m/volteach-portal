@@ -695,7 +695,7 @@ export default function App() {
                             </button>
                           </div>
                         </div>
-                        <div className="mt-2 text-center text-sm font-mono text-cyan-300 pointer-events-none direction-ltr">
+                        <div className="mt-2 text-center text-sm font-mono text-cyan-300 pointer-events-none direction-ltr" dir="ltr">
                           {f.eq}
                         </div>
                       </div>
@@ -765,7 +765,7 @@ export default function App() {
                                     {f.name}
                                   </button>
                                 </div>
-                                <div className="text-center font-mono text-xs text-cyan-300 pointer-events-none direction-ltr pt-1">
+                                <div className="text-center font-mono text-xs text-cyan-300 pointer-events-none direction-ltr pt-1" dir="ltr">
                                   {`$$${f.eq}$$`}
                                 </div>
                               </div>
@@ -1007,7 +1007,7 @@ export default function App() {
                                   <Trash className="h-3.5 w-3.5" />
                                 </button>
                                 <h4 className="text-xs font-bold text-slate-400 pr-1">{f.title}</h4>
-                                <div className="mt-3 text-center text-md text-cyan-300 font-mono direction-ltr">
+                                <div className="mt-3 text-center text-md text-cyan-300 font-mono direction-ltr" dir="ltr">
                                   {f.latex}
                                 </div>
                               </div>

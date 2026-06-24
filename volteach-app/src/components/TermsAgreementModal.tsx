@@ -75,7 +75,7 @@ export function TermsAgreementModal({ onAccept, onDecline }: TermsAgreementModal
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <p className="px-3.5 pb-3 text-[11px] text-slate-400 leading-relaxed direction-rtl text-right border-t border-slate-800 pt-2">
+                    <p className="px-3.5 pb-3 text-[11px] text-slate-400 leading-relaxed text-right border-t border-slate-800 pt-2">
                       {item.body}
                     </p>
                   </motion.div>

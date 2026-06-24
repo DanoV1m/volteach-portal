@@ -154,7 +154,7 @@ export function FormulaQuiz({ isOpen, onClose }: FormulaQuizProps) {
               <div ref={cardRef} className="w-full rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center space-y-4 min-h-[100px] flex flex-col items-center justify-center">
                 <p className="text-lg font-black text-white">{card.name}</p>
                 {revealed ? (
-                  <div className="text-cyan-300 font-mono text-base direction-ltr">
+                  <div className="text-cyan-300 font-mono text-base direction-ltr" dir="ltr">
                     {`$$${card.eq}$$`}
                   </div>
                 ) : (

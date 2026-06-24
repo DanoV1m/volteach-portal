@@ -40,7 +40,7 @@ export function QuickFormulaInput({ onAdd, addToast }: Props) {
         placeholder="נוסחה ב-LaTeX (למשל: V = I * R)" 
         value={eq}
         onChange={e => setEq(e.target.value)}
-        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-xs text-white placeholder-slate-655 focus:outline-none focus:border-emerald-500 font-mono direction-ltr text-right transition-colors duration-300"
+        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-1.5 text-xs text-white placeholder-slate-655 focus:outline-none focus:border-emerald-500 font-mono direction-ltr transition-colors duration-300"
       />
       <button 
         type="submit"

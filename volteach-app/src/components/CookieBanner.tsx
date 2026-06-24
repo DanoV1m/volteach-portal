@@ -27,7 +27,7 @@ export function CookieBanner() {
           transition={{ type: "spring", bounce: 0.1, duration: 0.6 }}
           className="fixed bottom-0 left-0 right-0 z-[60] p-4 bg-indigo-950/95 border-t border-indigo-900 shadow-[0_-10px_40px_-10px_rgba(79,70,229,0.3)] backdrop-blur-md"
         >
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 direction-rtl text-right">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-right">
             <div className="flex items-start gap-3">
               <Info className="h-6 w-6 text-indigo-400 shrink-0 mt-0.5" />
               <div>

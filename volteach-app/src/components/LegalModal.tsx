@@ -44,7 +44,7 @@ export function LegalModal({ isOpen, onClose, type }: LegalModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto direction-rtl text-right text-sm text-slate-300 space-y-4 custom-scrollbar">
+        <div className="p-6 overflow-y-auto text-right text-sm text-slate-300 space-y-4 custom-scrollbar">
           {type === 'terms' && (
             <>
               <p className="font-bold text-rose-400 mb-2">שימו לב: השימוש באתר מהווה הסכמה מלאה לתנאים הבאים. מטרתנו היא לעזור לסטודנטים נטו, ולכן אנו מגנים על עצמנו משפטית כדי שנוכל להמשיך להפעיל את הפלטפורמה.</p>

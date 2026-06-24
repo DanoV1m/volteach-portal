@@ -820,7 +820,7 @@ export function AiModal({ isOpen, onClose, courseTitle, topicName }: AiModalProp
                   {activeKnowledge.formula && (
                     <div className="bg-slate-950/40 border border-indigo-500/10 p-5 rounded-2xl space-y-3">
                       <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest leading-none">📐 נוסחת הדגל של הנושא</h4>
-                      <div className="rounded-xl bg-slate-950 p-4 text-center text-md font-mono text-indigo-200 overflow-x-auto direction-ltr max-w-full">
+                      <div className="rounded-xl bg-slate-950 p-4 text-center text-md font-mono text-indigo-200 overflow-x-auto direction-ltr max-w-full" dir="ltr">
                         {`$$${activeKnowledge.formula}$$`}
                       </div>
                     </div>

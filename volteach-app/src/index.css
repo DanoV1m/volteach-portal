@@ -43,6 +43,12 @@
   text-align: left;
 }
 
+/* Isolate inline KaTeX output from surrounding RTL text so adjacent
+   punctuation (parens, commas) doesn't get reordered by the BiDi algorithm. */
+.katex {
+  unicode-bidi: isolate;
+}
+
 .word-break {
   word-break: break-all;
 }
