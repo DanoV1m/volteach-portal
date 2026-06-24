@@ -8,18 +8,10 @@ import { sanitizeFormulaInput } from './utils/security';
 import MusicPlayer from './components/MusicPlayer';
 import { useSpotifyAuth } from './utils/useSpotifyAuth';
 import { useKatexRender } from './utils/useKatexRender';
-import { SearchModal } from './components/SearchModal';
-import { FormulaQuiz } from './components/FormulaQuiz';
-import { FormulaExplainer } from './components/FormulaExplainer';
 import { formulasSheets } from './data/formulas';
-import { QuickFormulaInput } from './components/QuickFormulaInput';
-import { LegalModal } from './components/LegalModal';
-import { CookieBanner } from './components/CookieBanner';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
-import { TermsAgreementModal } from './components/TermsAgreementModal';
-
 import { CoursePageSkeleton, FormulasPageSkeleton } from './components/SkeletonUI';
 
 // Lazily loaded views — each becomes its own chunk
@@ -46,6 +38,29 @@ const AiModal = lazy(() =>
 );
 const SignIn = lazy(() => import('./components/SignIn'));
 const ProfileModal = lazy(() => import('./components/ProfileModal'));
+
+// Lazily loaded utility components — not needed on first paint
+const SearchModal = lazy(() =>
+  import('./components/SearchModal').then(m => ({ default: m.SearchModal }))
+);
+const FormulaQuiz = lazy(() =>
+  import('./components/FormulaQuiz').then(m => ({ default: m.FormulaQuiz }))
+);
+const FormulaExplainer = lazy(() =>
+  import('./components/FormulaExplainer').then(m => ({ default: m.FormulaExplainer }))
+);
+const QuickFormulaInput = lazy(() =>
+  import('./components/QuickFormulaInput').then(m => ({ default: m.QuickFormulaInput }))
+);
+const LegalModal = lazy(() =>
+  import('./components/LegalModal').then(m => ({ default: m.LegalModal }))
+);
+const CookieBanner = lazy(() =>
+  import('./components/CookieBanner').then(m => ({ default: m.CookieBanner }))
+);
+const TermsAgreementModal = lazy(() =>
+  import('./components/TermsAgreementModal').then(m => ({ default: m.TermsAgreementModal }))
+);
 
 const ViewFallback = () => (
   <div className="flex items-center justify-center min-h-[40vh]">
@@ -553,13 +568,15 @@ export default function App() {
     <div ref={appContainerRef} className="min-h-screen bg-[#0f172a] text-slate-100 font-sans antialiased overflow-x-hidden pt-20">
       {/* Terms of Service blocking modal for users who haven't accepted yet */}
       {tosAccepted === false && (
-        <TermsAgreementModal
-          onAccept={acceptTos}
-          onDecline={() => {
-            signOut(auth);
-            addToast('התנתקת מהמערכת', 'info');
-          }}
-        />
+        <Suspense fallback={null}>
+          <TermsAgreementModal
+            onAccept={acceptTos}
+            onDecline={() => {
+              signOut(auth);
+              addToast('התנתקת מהמערכת', 'info');
+            }}
+          />
+        </Suspense>
       )}
       
       {/* GLOBAL TOAST BANNER */}
@@ -663,10 +680,12 @@ export default function App() {
                 </div>
 
                 {isAddingQuick && (
-                  <QuickFormulaInput 
-                    onAdd={handleAddQuickFormula} 
-                    addToast={addToast} 
-                  />
+                  <Suspense fallback={null}>
+                    <QuickFormulaInput
+                      onAdd={handleAddQuickFormula}
+                      addToast={addToast}
+                    />
+                  </Suspense>
                 )}
 
                 <div className="grid gap-1.5">
@@ -1071,45 +1090,55 @@ export default function App() {
         />
       </Suspense>
 
-      <LegalModal
-        isOpen={isLegalOpen}
-        onClose={() => setIsLegalOpen(false)}
-        type={legalType}
-      />
+      <Suspense fallback={null}>
+        <LegalModal
+          isOpen={isLegalOpen}
+          onClose={() => setIsLegalOpen(false)}
+          type={legalType}
+        />
+      </Suspense>
 
-      <CookieBanner />
+      <Suspense fallback={null}>
+        <CookieBanner />
+      </Suspense>
 
       <MusicPlayer />
 
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        onSelectInstitution={(key, type) => {
-          setSelectedType(type);
-          setSelectedInstitutionKey(key);
-          setSelectedYear(null);
-          setSelectedSemester(null);
-          setView('years');
-        }}
-        onSelectCourse={(institutionKey, year, semester) => {
-          const inst = institutions.find(i => institutionKey.startsWith(i.key));
-          if (inst) {
-            setSelectedType(inst.type);
-            setSelectedInstitutionKey(institutionKey);
-            setSelectedYear(year);
-            setSelectedSemester(semester);
-            setView('courses');
-          }
-        }}
-        onSelectFormula={(categoryId) => {
-          setIsSidebarCollapsed(false);
-          setOpenAccordion(categoryId);
-        }}
-      />
+      <Suspense fallback={null}>
+        <SearchModal
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+          onSelectInstitution={(key, type) => {
+            setSelectedType(type);
+            setSelectedInstitutionKey(key);
+            setSelectedYear(null);
+            setSelectedSemester(null);
+            setView('years');
+          }}
+          onSelectCourse={(institutionKey, year, semester) => {
+            const inst = institutions.find(i => institutionKey.startsWith(i.key));
+            if (inst) {
+              setSelectedType(inst.type);
+              setSelectedInstitutionKey(institutionKey);
+              setSelectedYear(year);
+              setSelectedSemester(semester);
+              setView('courses');
+            }
+          }}
+          onSelectFormula={(categoryId) => {
+            setIsSidebarCollapsed(false);
+            setOpenAccordion(categoryId);
+          }}
+        />
+      </Suspense>
 
-      <FormulaQuiz isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
+      <Suspense fallback={null}>
+        <FormulaQuiz isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
+      </Suspense>
 
-      <FormulaExplainer formula={explainerFormula} onClose={() => setExplainerFormula(null)} />
+      <Suspense fallback={null}>
+        <FormulaExplainer formula={explainerFormula} onClose={() => setExplainerFormula(null)} />
+      </Suspense>
 
       {/* SIGN IN MODAL */}
       {isAuthOpen && (

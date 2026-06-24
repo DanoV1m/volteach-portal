@@ -19,7 +19,9 @@ export default defineConfig(() => {
         output: {
           manualChunks: {
             'vendor-react': ['react', 'react-dom'],
-            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+            'vendor-firebase-app': ['firebase/app'],
+            'vendor-firebase-auth': ['firebase/auth'],
+            'vendor-firebase-firestore': ['firebase/firestore'],
             'vendor-motion': ['motion'],
           },
         },
@@ -40,7 +42,7 @@ export default defineConfig(() => {
         provider: 'v8' as const,
         reporter: ['text', 'lcov'],
         include: ['src/utils/**', 'src/components/**'],
-        exclude: ['src/components/DevPerfOverlay.tsx'],
+        exclude: [],
       },
     },
   };
