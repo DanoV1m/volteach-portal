@@ -18,7 +18,6 @@ import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import { TermsAgreementModal } from './components/TermsAgreementModal';
-import { loadRemoteConfig } from './utils/fetchConfig';
 
 import { CoursePageSkeleton, FormulasPageSkeleton } from './components/SkeletonUI';
 
@@ -158,7 +157,6 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        loadRemoteConfig();
         try {
           const userRef = doc(db, 'users', firebaseUser.uid);
           const snap = await getDoc(userRef);

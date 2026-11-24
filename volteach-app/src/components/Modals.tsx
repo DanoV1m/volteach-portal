@@ -4,20 +4,7 @@ import { CourseEnrichment, Institution, TopicKnowledge } from '../types';
 import { courseEnrichment, topicKnowledge } from '../data/enrichment';
 import { PhysicsSimulation } from './PhysicsSimulation';
 
-// Shared backend caller for all Gemini API calls
-const queryBackend = async (promptMsg: string): Promise<string> => {
-  const res = await fetch("/api/gemini", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt: promptMsg }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `HTTP ${res.status}`);
-  }
-  const data = await res.json();
-  return data.text;
-};
+import { queryBackend } from '../utils/aiClient';
 
 // ==========================================
 // 1. CONTACT MODAL

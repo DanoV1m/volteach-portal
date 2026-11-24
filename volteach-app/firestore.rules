@@ -57,10 +57,9 @@ service cloud.firestore {
         && incoming().createdAt == existing().createdAt;
     }
 
-    // 4. App config (API keys) — read by any signed-in user, write by admin only
+    // Server-only configuration: Admin SDK bypasses client rules.
     match /config/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && request.auth.token.email == 'vimidan99@gmail.com';
+      allow read, write: if false;
     }
 
     // 5. Community Shared Resources
