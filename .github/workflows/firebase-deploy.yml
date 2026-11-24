@@ -1,16 +1,20 @@
 name: Firebase Hosting deployment
 
-# Deploy only after an approved merge to main.
+# Explicit release approval is separate from merging. Hosting alone is not sufficient for the AI backend.
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DEPLOY only after backend and rules are validated and release approved'
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   build_and_deploy:
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DEPLOY'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +31,7 @@ jobs:
         working-directory: ./volteach-app
         run: npx --no-install vite build
       - name: Deploy to Firebase Hosting
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirm == 'DEPLOY'
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

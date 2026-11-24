@@ -20,6 +20,18 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: test ! -f dist/server.cjs
+      - name: Local production bundle smoke test
+        run: |
+          NODE_ENV=production PORT=3100 node server-dist/server.cjs >/tmp/volteach-server.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3100/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3100/ >/dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{"prompt":"test"}' http://127.0.0.1:3100/api/gemini)" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3100/api/unknown)" = 404
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
