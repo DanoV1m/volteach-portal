@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import { createAiGuard } from "./src/server/aiGuard";
 import { initializeApp, getApps } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
@@ -14,31 +15,18 @@ async function startServer() {
 
   app.use(express.json({ limit: '64kb' }));
   const admin = getApps()[0] ?? initializeApp({ projectId: 'volteach-portal' });
-  const requests = new Map<string, { count: number; expires: number }>();
-  const limit = 20;
+  const guard = createAiGuard(async token => (await getAuth(admin).verifyIdToken(token)).uid);
 
   // API endpoint for Gemini
   app.post("/api/gemini", async (req, res) => {
     try {
-      const token = req.headers.authorization?.match(/^Bearer (\S+)$/i)?.[1];
-      if (!token) return res.status(401).json({ error: 'Authentication required' });
-      let uid: string;
-      try { uid = (await getAuth(admin).verifyIdToken(token)).uid; }
-      catch { return res.status(401).json({ error: 'Invalid authentication' }); }
-      const now = Date.now();
-      for (const [key, value] of requests) if (value.expires <= now) requests.delete(key);
-      const bucket = requests.get(uid);
-      if (bucket && bucket.count >= limit) return res.status(429).json({ error: 'Request limit reached' });
-      if (!bucket && requests.size >= 10000) return res.status(503).json({ error: 'Service busy' });
-      requests.set(uid, { count: (bucket?.count ?? 0) + 1, expires: bucket?.expires ?? now + 60000 });
-      const { prompt } = req.body ?? {};
-      if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 20000) {
-        return res.status(400).json({ error: "Prompt is required" });
-      }
+      const decision = await guard(req.headers.authorization, req.body);
+      if (!decision.ok) return res.status(decision.status).json({ error: decision.error });
+      const { prompt } = decision;
 
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        return res.status(500).json({ error: "GEMINI_API_KEY is not configured on the server." });
+        return res.status(503).json({ error: "AI service unavailable" });
       }
 
       const ai = new GoogleGenAI({
