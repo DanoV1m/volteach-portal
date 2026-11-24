@@ -20,3 +20,11 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: test ! -f dist/server.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install isolated emulator test tooling
+        run: npm install --no-save --package-lock=false @firebase/rules-unit-testing@5.0.0 firebase-tools@15
+      - name: Test rules against disposable emulator
+        run: npx firebase emulators:exec --only firestore --project demo-volteach-security "node tests/firestore-rules.mjs"
