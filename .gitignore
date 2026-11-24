@@ -10,3 +10,9 @@ volteach-app/.env*
 .DS_Store
 *.log
 .agents/
+
+# Never commit local administrative secrets or new registry exports
+serviceAccountKey.json
+**/serviceAccountKey.json
+admin_database/*.csv
+private_exports/

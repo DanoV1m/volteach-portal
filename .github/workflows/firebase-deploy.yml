@@ -1,40 +1,37 @@
-name: Deploy to Firebase Hosting on PR and merge
+name: Firebase Hosting deployment
 
+# Deploy only after an approved merge to main.
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+
+permissions:
+  contents: read
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          
-      - name: Install Dependencies
+      - name: Install dependencies
         working-directory: ./volteach-app
-        run: npm ci || npm install
-        
-      - name: Build Application with Gemini API Key Pipeline
+        run: npm ci
+      - name: Run tests
         working-directory: ./volteach-app
-        run: npm run build
-        env:
-          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
-          
+        run: npm test
+      - name: Build frontend only
+        working-directory: ./volteach-app
+        run: npx --no-install vite build
       - name: Deploy to Firebase Hosting
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_VOLTEACH_PORTAL }}'
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VOLTEACH_PORTAL }}
           projectId: volteach-portal
           channelId: live
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
+          entryPoint: ./volteach-app

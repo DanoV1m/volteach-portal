@@ -6,6 +6,29 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+ 
+// Exports are local administrative operations only; never run in CI.
+if (process.env.CI || process.env.GITHUB_ACTIONS) {
+  throw new Error('Private database exports are not permitted in CI.');
+}
+const outputArg = process.env.VOLTEACH_PRIVATE_EXPORT_DIR;
+if (!outputArg || !path.isAbsolute(outputArg)) {
+  throw new Error('Set VOLTEACH_PRIVATE_EXPORT_DIR to an absolute, private directory outside this repository.');
+}
+const repoRoot = fs.realpathSync(path.resolve(__dirname, '../..'));
+const outputDir = fs.realpathSync(outputArg);
+const relative = path.relative(repoRoot, outputDir);
+if (!relative || (!relative.startsWith('..' + path.sep) && relative !== '..' && !path.isAbsolute(relative))) {
+  throw new Error('Private export directory must be outside the repository.');
+}
+if (!fs.statSync(outputDir).isDirectory()) {
+  throw new Error('Private export directory must be an existing directory.');
+}
+function writePrivateCsv(filename, content) {
+  // Exclusive creation avoids overwriting files or following an existing symlink.
+  fs.writeFileSync(path.join(outputDir, filename), content, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+}
+
 
 // 1. Resolve Firebase Service Account
 let serviceAccount = null;
@@ -13,7 +36,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   try {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   } catch (err) {
-    console.error('Failed to parse service account JSON from environment:', err);
+    console.error('Invalid service account JSON in environment.');
   }
 } else {
   // Look for a local service account key for local testing
@@ -23,7 +46,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       const rawKey = fs.readFileSync(localKeyPath, 'utf8');
       serviceAccount = JSON.parse(rawKey);
     } catch (e) {
-      console.error('Failed to read local serviceAccountKey.json:', e);
+      console.error('Invalid local service account JSON.');
     }
   }
 }
@@ -34,7 +57,7 @@ if (!serviceAccount) {
   process.exit(1);
 }
 
-console.log('Project ID from Service Account:', serviceAccount.project_id);
+
 
 // Initialize Admin App
 const app = initializeApp({
@@ -49,6 +72,8 @@ const BOM = '\uFEFF';
 function escapeCSV(val) {
   if (val === undefined || val === null) return '';
   let str = String(val);
+  // Neutralize spreadsheet formulas in untrusted exported fields.
+  if (/^[\s\uFEFF]*[=+\-@]/.test(str) || /^[\t\r\n]/.test(str)) str = "'" + str;
   if (str.includes(',') || str.includes('"') || str.includes('\n')) {
     str = str.replace(/"/g, '""');
     return `"${str}"`;
@@ -75,13 +100,8 @@ async function syncUsers() {
     ].join(',') + '\n';
   });
 
-  const destPath = path.join(__dirname, '../../admin_database/users_registry.csv');
-  const destDir = path.dirname(destPath);
-  if (!fs.existsSync(destDir)) {
-    fs.mkdirSync(destDir, { recursive: true });
-  }
-  fs.writeFileSync(destPath, csvContent, 'utf8');
-  console.log(`Users synced successfully. Written to ${destPath}`);
+  writePrivateCsv('users_registry.csv', csvContent);
+  console.log('Private users export complete.');
 }
 
 async function syncResources() {
@@ -107,13 +127,8 @@ async function syncResources() {
     ].join(',') + '\n';
   });
 
-  const destPath = path.join(__dirname, '../../admin_database/resources_registry.csv');
-  const destDir = path.dirname(destPath);
-  if (!fs.existsSync(destDir)) {
-    fs.mkdirSync(destDir, { recursive: true });
-  }
-  fs.writeFileSync(destPath, csvContent, 'utf8');
-  console.log(`Resources synced successfully. Written to ${destPath}`);
+  writePrivateCsv('resources_registry.csv', csvContent);
+  console.log('Private resources export complete.');
 }
 
 async function run() {
@@ -123,7 +138,7 @@ async function run() {
     console.log('Synchronization complete.');
     process.exit(0);
   } catch (err) {
-    console.error('Synchronization failed:', err);
+    console.error('Private export failed. Check permissions, credentials and existing output files.');
     process.exit(1);
   }
 }
