@@ -12,9 +12,10 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT || 3000);
 
+  app.disable('x-powered-by');
   app.use(express.json({ limit: '64kb' }));
   const admin = getApps()[0] ?? initializeApp({ projectId: 'volteach-portal' });
-  const guard = createAiGuard(async token => (await getAuth(admin).verifyIdToken(token)).uid);
+  const guard = createAiGuard(async token => (await getAuth(admin).verifyIdToken(token, true)).uid);
 
   // API endpoint for Gemini
   app.post("/api/gemini", async (req, res) => {
@@ -43,7 +44,8 @@ async function startServer() {
         config: { maxOutputTokens: 4096 },
       });
 
-      res.json({ text: response.text });
+      if (typeof response.text !== 'string') return res.status(502).json({error: 'AI service unavailable'});
+      res.set('Cache-Control', 'no-store').json({ text: response.text });
     } catch (error: any) {
       console.error("Gemini request failed");
       res.status(500).json({ error: "AI service unavailable" });
@@ -52,13 +54,13 @@ async function startServer() {
 
   // Collect Web Vitals from production clients (sendBeacon payload)
   app.post('/api/vitals', (req, res) => {
-    const { name, value, rating, path: urlPath } = req.body as {
+    const { name, value, rating } = req.body as {
       name?: string;
       value?: number;
       rating?: string;
       path?: string;
     };
-    if (name && value !== undefined) {
+    if (name && ['CLS','LCP','INP','FCP','TTFB'].includes(name) && typeof value === 'number' && Number.isFinite(value) && value >= 0) {
       const badge =
         rating === 'good' ? '✅' :
         rating === 'needs-improvement' ? '⚠️' : '❌';
@@ -66,7 +68,7 @@ async function startServer() {
         name === 'CLS'
           ? (value as number).toFixed(3)
           : `${Math.round(value as number)}ms`;
-      console.log(`[Vitals] ${badge} ${name}: ${display}  path=${urlPath ?? '/'}`);
+      console.log(`[Vitals] ${badge} ${name}: ${display}  path omitted`);
     }
     res.status(204).end();
   });
