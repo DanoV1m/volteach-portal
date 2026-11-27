@@ -23,3 +23,29 @@ describe('AI gateway aggregate quota', () => {
   expect(()=>createAiGuard(async t=>t, Date.now, 20, 60000, 100, 0)).toThrow();
  });
 });
+
+describe('AI gateway boundary and concurrency', () => {
+ it('rejects missing, malformed and simulated revoked tokens',async()=>{
+  const guard=createAiGuard(async t=>{if(t==='revoked')throw Error();return t;});
+  for(const authorization of [undefined,'Basic abc','Bearer a b','Bearer revoked'])
+   expect(await guard(authorization,{prompt:'test'})).toMatchObject({ok:false,status:401});
+ });
+ it('rejects invalid bodies before charging quota',async()=>{
+  const guard=createAiGuard(async t=>t,()=>10,1,1000,10,1);
+  for(const body of [null,{}, {prompt:'  '},{prompt:1},{prompt:'x'.repeat(20001)}])
+   expect(await guard('Bearer a',body)).toMatchObject({ok:false,status:400});
+  expect((await guard('Bearer a',{prompt:'x'})).ok).toBe(true);
+ });
+ it('concurrent requests cannot exceed the single-process aggregate quota',async()=>{
+  const guard=createAiGuard(async t=>t,()=>10,20,1000,100,3);
+  const results=await Promise.all(Array.from({length:20},(_,i)=>guard('Bearer u'+i,{prompt:'x'})));
+  expect(results.filter(r=>r.ok)).toHaveLength(3);
+  expect(results.filter(r=>!r.ok&&r.status===429)).toHaveLength(17);
+ });
+ it('enforces identity capacity and removes expired buckets',async()=>{
+  let now=10; const guard=createAiGuard(async t=>t,()=>now,20,1000,1,100);
+  expect((await guard('Bearer a',{prompt:'x'})).ok).toBe(true);
+  expect(await guard('Bearer b',{prompt:'x'})).toMatchObject({ok:false,status:503});
+  now+=1000;expect((await guard('Bearer b',{prompt:'x'})).ok).toBe(true);
+ });
+});
